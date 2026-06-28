@@ -3,7 +3,8 @@ layout: post
 title: "Governing the Run Loop: Why Enterprise AI Agents Must Think Inside the Box"
 date: 2026-06-27 18:00:00 +0800
 categories: [AAIF, Security]
-tags: [MCP, agentgateway, Systems-Governance, Safety]
+topics: [agentic-safety]
+projects: [mcp, agentgateway]
 author: vincent_caldeira
 external_repo: "https://github.com/caldeirav/mcp-governed-runloop"
 image: "/assets/images/og/governed-run-loops-for-mcp.png"

@@ -1,0 +1,20 @@
+{% comment %}
+  Author photo — separate from brand mascot Vince the Validator.
+  Set site.author.photo when a headshot is available; otherwise shows initials.
+{% endcomment %}
+{% if site.author.photo %}
+  <img
+    src="{{ site.author.photo | relative_url }}"
+    alt="{{ site.author.name }}"
+    class="{{ include.class | default: 'h-12 w-12 rounded-full border-2 border-brand-crimson object-cover flex-shrink-0' }}"
+    width="{{ include.size | default: 48 }}"
+    height="{{ include.size | default: 48 }}"
+  >
+{% else %}
+  <div
+    class="{{ include.class | default: 'h-12 w-12 rounded-full border-2 border-brand-crimson bg-slate-100 flex-shrink-0 flex items-center justify-center' }}"
+    aria-hidden="true"
+  >
+    <span class="text-sm font-bold text-brand-crimson font-sans">{{ site.author.initials | default: "VC" }}</span>
+  </div>
+{% endif %}

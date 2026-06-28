@@ -15,9 +15,9 @@ layout: default
       <time class="text-slate-500" datetime="{{ page.date | date_to_xmlschema }}">
         {{ page.date | date: "%B %d, %Y" }}
       </time>
-      {% if page.tags.size > 0 %}
+      {% if page.coauthors %}
         <span class="text-slate-300" aria-hidden="true">•</span>
-        <span class="text-slate-500">{{ page.tags | join: ", " }}</span>
+        <span class="text-slate-500">Co-authored with {{ page.coauthors | join: ", " }}</span>
       {% endif %}
     </div>
 
@@ -29,6 +29,12 @@ layout: default
       <p class="text-lg text-slate-600 leading-relaxed font-light italic">
         {{ page.description }}
       </p>
+    {% endif %}
+
+    {% if page.topics.size > 0 or page.projects.size > 0 %}
+      <div class="flex flex-wrap gap-2 pt-1">
+        {% include keyword-pills.html topics=page.topics projects=page.projects %}
+      </div>
     {% endif %}
 
     {% if page.external_repo %}
@@ -73,17 +79,12 @@ layout: default
   </div>
 
   <aside class="mt-12 p-6 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-4">
-    <img
-      src="{{ site.author.avatar | relative_url }}"
-      alt="{{ site.author.name }}"
-      class="h-12 w-12 rounded-full border-2 border-brand-crimson object-contain bg-white flex-shrink-0"
-      width="48"
-      height="48"
-    >
+    {% include author-avatar.html %}
     <div class="space-y-1">
       <p class="text-[0.65rem] font-mono uppercase tracking-wider text-brand-teal">{{ site.brand.aaif_cohort }}</p>
       <h2 class="text-sm font-bold text-slate-900">{{ site.author.name }}</h2>
-      <p class="text-xs text-slate-600">{{ site.author.bio }}</p>
+      <p class="text-xs text-slate-500 font-medium">{{ site.author.role }}</p>
+      <p class="text-xs text-slate-600 leading-relaxed">{{ site.author.bio }}</p>
     </div>
   </aside>
 </article>

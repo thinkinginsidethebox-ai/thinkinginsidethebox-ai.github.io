@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Articles
-description: Technical articles on enterprise agentic AI governance, bounded autonomy, and sovereign multi-agent systems.
+description: Agentic AI articles by Vincent Caldeira, AAIF Ambassador — on safety, metacognition, evaluation-driven development, MCP, and agentgateway.
 ---
 
 <section class="space-y-10">
@@ -25,19 +25,25 @@ description: Technical articles on enterprise agentic AI governance, bounded aut
     </div>
 
     <p class="text-slate-600 text-sm leading-relaxed max-w-3xl">
-      In regulated enterprise environments, autonomous agents cannot run unconstrained.
-      This publication explores how to engineer <strong class="text-slate-800">cognitive boxes</strong> —
-      strict, deterministic, inspectable boundaries — using open protocols, formal safety
-      frameworks, and architectural guardrails. A technical channel for the
-      <a href="{{ site.brand.aaif_url }}" class="text-brand-teal hover:text-brand-crimson transition" target="_blank" rel="noopener noreferrer">Agentic AI Foundation Ambassador</a> program.
+      Articles on agentic AI by <strong class="text-slate-800">{{ site.author.name }}</strong>,
+      published as part of the
+      <a href="{{ site.brand.aaif_url }}" class="text-brand-teal hover:text-brand-crimson transition" target="_blank" rel="noopener noreferrer">Agentic AI Foundation Ambassador</a>
+      program — solo or co-authored technical writing on enterprise agent architecture,
+      safety, and open-source interoperability.
     </p>
 
-    <div class="flex flex-wrap gap-2">
-      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-50 border border-slate-200 text-brand-teal">Agentic Safety</span>
-      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-50 border border-slate-200 text-brand-teal">Metacognition</span>
-      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-50 border border-slate-200 text-brand-teal">Evaluation Driven Development</span>
-      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-crimson/5 border border-brand-crimson/25 text-brand-crimson">MCP</span>
-      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-crimson/5 border border-brand-crimson/25 text-brand-crimson">agentgateway</span>
+    <div class="space-y-2">
+      <p class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Topics</p>
+      <div class="flex flex-wrap gap-2">
+        {% include keyword-pills.html show_all_topics=true %}
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <p class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Projects</p>
+      <div class="flex flex-wrap gap-2">
+        {% include keyword-pills.html show_all_projects=true %}
+      </div>
     </div>
   </header>
 
@@ -79,8 +85,10 @@ description: Technical articles on enterprise agentic AI governance, bounded aut
                   {% if post.description %}
                     <p class="text-sm text-slate-600 leading-relaxed">{{ post.description }}</p>
                   {% endif %}
-                  {% if post.tags.size > 0 %}
-                    <p class="text-xs text-slate-400 font-mono">{{ post.tags | join: " · " }}</p>
+                  {% if post.topics.size > 0 or post.projects.size > 0 %}
+                    <div class="flex flex-wrap gap-1.5 pt-1">
+                      {% include keyword-pills.html topics=post.topics projects=post.projects %}
+                    </div>
                   {% endif %}
                 </div>
               </a>

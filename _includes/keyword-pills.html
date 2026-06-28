@@ -1,0 +1,54 @@
+{% comment %}
+  Renders topic and/or project pills from slug lists.
+  Usage:
+    {% include keyword-pills.html topics=page.topics projects=page.projects %}
+    {% include keyword-pills.html show_all_topics=true show_all_projects=true %}
+{% endcomment %}
+
+{% if include.show_all_topics %}
+  {% for item in site.data.keywords.topics %}
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-50 border border-slate-200 text-brand-teal">
+      {{ item.label }}
+    </span>
+  {% endfor %}
+{% elsif include.topics %}
+  {% for slug in include.topics %}
+    {% for item in site.data.keywords.topics %}
+      {% if item.slug == slug %}
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-50 border border-slate-200 text-brand-teal">
+          {{ item.label }}
+        </span>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+{% endif %}
+
+{% if include.show_all_projects %}
+  {% for item in site.data.keywords.projects %}
+    {% if item.url %}
+      <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-crimson/5 border border-brand-crimson/25 text-brand-crimson hover:bg-brand-crimson/10 transition">
+        {{ item.label }}
+      </a>
+    {% else %}
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-crimson/5 border border-brand-crimson/25 text-brand-crimson">
+        {{ item.label }}
+      </span>
+    {% endif %}
+  {% endfor %}
+{% elsif include.projects %}
+  {% for slug in include.projects %}
+    {% for item in site.data.keywords.projects %}
+      {% if item.slug == slug %}
+        {% if item.url %}
+          <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-crimson/5 border border-brand-crimson/25 text-brand-crimson hover:bg-brand-crimson/10 transition">
+            {{ item.label }}
+          </a>
+        {% else %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-crimson/5 border border-brand-crimson/25 text-brand-crimson">
+            {{ item.label }}
+          </span>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+{% endif %}

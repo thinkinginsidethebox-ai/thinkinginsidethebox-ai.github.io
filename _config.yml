@@ -1,37 +1,39 @@
 title: Thinking Inside the Box
 subtitle: Architectural Governance & Bounded Autonomy for Enterprise Agentic AI
 description: >-
-  Technical insights on building safe, auditable, and sovereign multi-agent systems
-  using open standards like MCP, agentgateway, and AGENTS.md — from the Agentic AI
-  Foundation Ambassador program.
+  Agentic AI articles by Vincent Caldeira, AAIF Ambassador — on safety, metacognition,
+  evaluation-driven development, and open projects including MCP and agentgateway.
 url: "https://thinkinginsidethebox.ai"
 baseurl: ""
 lang: en
 
-# Brand & publication identity (not a personal blog)
 brand:
   name: Thinking Inside the Box
   domain: thinkinginsidethebox.ai
   tagline: Architectural Governance & Bounded Autonomy for Enterprise Agentic AI
   mascot: Vince the Validator
+  mascot_logo: /assets/images/thinkinginsidethebox.ai_logo_closeup.png
   aaif_cohort: "AAIF Ambassador Cohort 2026"
   aaif_url: "https://aaif.io/ambassadors"
 
 author:
   name: Vincent Caldeira
-  role: AAIF Ambassador · Red Hat APAC CTO
+  initials: VC
+  role: AAIF Ambassador · Red Hat APAC CTO · Columbia University Visiting Scholar
   twitter: vcaldeira
   linkedin: vincentcaldeira
   github: caldeirav
-  avatar: /assets/images/thinkinginsidethebox.ai_logo_closeup.png
+  photo:
   bio: >-
-    AAIF Ambassador and Red Hat APAC CTO exploring enterprise agentic AI governance,
-    bounded autonomy, and sovereign open-source control planes.
+    Vincent Caldeira, Red Hat APAC CTO and Industry Visiting Scholar at Columbia University,
+    drives tech strategy and emerging technology engineering. A Top 10 APAC CTO (2023) with
+    20+ years in finance IT, he is an authority on open source, cloud-native technologies and AI.
+    Vincent holds leadership roles across the Linux Foundation (FINOS, LF AI & Data, Agentic AI
+    Foundation, CNCF) and GSF, championing AI safety, sustainability, and digital sovereignty.
 
 logo: /assets/images/thinkinginsidethebox.ai_logo_closeup.png
 favicon: /assets/images/thinkinginsidethebox.ai_logo_closeup.png
 
-# Default Open Graph image (1200×627 — see assets/images/og/)
 image: /assets/images/og/site-default.png
 theme_color: "#C91D1D"
 

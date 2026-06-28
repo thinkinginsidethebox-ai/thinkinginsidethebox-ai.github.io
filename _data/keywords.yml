@@ -1,0 +1,28 @@
+# Central registry for editorial topics and AAIF / open-source projects.
+# Reference slugs in post front matter:
+#   topics: [agentic-safety, metacognition]
+#   projects: [mcp, agentgateway]
+
+topics:
+  - slug: agentic-safety
+    label: Agentic Safety
+    description: Runtime safety, policy enforcement, and governance patterns for production agentic systems.
+
+  - slug: metacognition
+    label: Metacognition
+    description: Self-correcting cognitive loops and reflective reasoning inside bounded permissions.
+
+  - slug: evaluation-driven-development
+    label: Evaluation Driven Development
+    description: Testable, measurable agent behavior validated through structured evaluation harnesses.
+
+projects:
+  - slug: mcp
+    label: MCP
+    description: Model Context Protocol — interoperable tool and context integration for agents.
+    url: "https://modelcontextprotocol.io"
+
+  - slug: agentgateway
+    label: agentgateway
+    description: Architectural control plane for intercepting and governing agent tool execution.
+    url: "https://github.com/agentgateway/agentgateway"
