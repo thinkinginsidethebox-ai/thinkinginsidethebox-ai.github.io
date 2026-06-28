@@ -5,7 +5,6 @@ date: 2026-06-27 18:00:00 +0800
 categories: [AAIF, Security]
 topics: [agentic-safety]
 projects: [mcp, agentgateway]
-author: vincent_caldeira
 external_repo: "https://github.com/caldeirav/mcp-governed-runloop"
 image: "/assets/images/og/governed-run-loops-for-mcp.png"
 description: "How to design a dynamic, multi-layered control plane using agentgateway to intercept, validate, and secure Model Context Protocol tool execution."

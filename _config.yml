@@ -20,6 +20,7 @@ author:
   name: Vincent Caldeira
   initials: VC
   role: Red Hat APAC CTO · Columbia University Visiting Scholar · AAIF Ambassador
+  url: "https://www.linkedin.com/in/vincentcaldeira"
   twitter: vcaldeira
   linkedin: vincentcaldeira
   github: caldeirav
@@ -55,7 +56,6 @@ defaults:
       type: posts
     values:
       layout: post
-      author: vincent_caldeira
 
 exclude:
   - Gemfile
