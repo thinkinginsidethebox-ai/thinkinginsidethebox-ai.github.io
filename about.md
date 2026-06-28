@@ -8,15 +8,16 @@ permalink: /about/
 <section class="space-y-8">
   <header class="space-y-4">
     <p class="text-xs font-mono uppercase tracking-wider text-brand-teal">{{ site.brand.aaif_cohort }}</p>
-    <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">About This Publication</h1>
-    <p class="text-lg text-slate-400 leading-relaxed">
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">About This Publication</h1>
+    <p class="text-lg text-slate-600 leading-relaxed">
       {{ site.brand.name }} is a dedicated technical blog — not a personal site — focused on
       enterprise-grade agentic AI architecture, governance, and open-source interoperability.
     </p>
   </header>
 
-  <div class="prose prose-invert prose-slate max-w-none font-serif space-y-6
-    prose-headings:font-sans prose-headings:text-white
+  <div class="prose prose-slate max-w-none font-serif
+    prose-headings:font-sans prose-headings:text-slate-900
+    prose-p:text-slate-700
     prose-a:text-brand-teal hover:prose-a:text-brand-crimson">
     <h2>Editorial Philosophy</h2>
     <p>
@@ -39,19 +40,19 @@ permalink: /about/
       <strong>{{ site.brand.mascot }}</strong> represents containment, governance, and structural
       safety — a peer concept to the AAIF mascot, always illustrated working inside the
       transparent Box. Visual identity uses Sovereign Crimson (<code>#C91D1D</code>),
-      Validator Teal (<code>#0D9488</code>), and deep slate backgrounds.
+      Validator Teal (<code>#0D9488</code>), and clean white surfaces with slate typography.
     </p>
 
-    <div class="not-prose flex flex-col sm:flex-row items-start gap-6 p-6 rounded-xl border border-slate-800 bg-slate-900/40">
+    <div class="not-prose flex flex-col sm:flex-row items-start gap-6 p-6 rounded-xl border border-slate-200 bg-slate-50">
       <img
         src="{{ site.logo | relative_url }}"
         alt="{{ site.brand.mascot }}"
-        class="h-32 w-32 rounded-xl object-cover ring-2 ring-brand-crimson/30"
+        class="h-32 w-32 rounded-xl object-contain bg-white border border-slate-200"
         width="128"
         height="128"
       >
-      <div class="space-y-2 text-sm text-slate-400">
-        <p class="font-sans font-bold text-white">{{ site.author.name }}</p>
+      <div class="space-y-2 text-sm text-slate-600">
+        <p class="font-sans font-bold text-slate-900">{{ site.author.name }}</p>
         <p>{{ site.author.role }}</p>
         <p>{{ site.author.bio }}</p>
         <p class="pt-2">

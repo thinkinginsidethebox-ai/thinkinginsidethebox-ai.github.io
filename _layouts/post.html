@@ -1,30 +1,32 @@
 ---
 layout: default
 ---
+{% assign hero_image = page.image | default: site.image %}
+
 <article class="space-y-8">
-  <header class="space-y-4 pb-6 border-b border-slate-900">
+  <header class="space-y-4 pb-6 border-b border-slate-200">
     <div class="flex flex-wrap items-center gap-2 text-xs">
       {% if page.categories.size > 0 %}
         <span class="text-brand-crimson font-mono uppercase tracking-wider font-bold">
           {{ page.categories | join: " · " }}
         </span>
-        <span class="text-slate-600" aria-hidden="true">•</span>
+        <span class="text-slate-300" aria-hidden="true">•</span>
       {% endif %}
-      <time class="text-slate-400" datetime="{{ page.date | date_to_xmlschema }}">
+      <time class="text-slate-500" datetime="{{ page.date | date_to_xmlschema }}">
         {{ page.date | date: "%B %d, %Y" }}
       </time>
       {% if page.tags.size > 0 %}
-        <span class="text-slate-600" aria-hidden="true">•</span>
+        <span class="text-slate-300" aria-hidden="true">•</span>
         <span class="text-slate-500">{{ page.tags | join: ", " }}</span>
       {% endif %}
     </div>
 
-    <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
       {{ page.title }}
     </h1>
 
     {% if page.description %}
-      <p class="text-lg text-slate-400 leading-relaxed font-light italic">
+      <p class="text-lg text-slate-600 leading-relaxed font-light italic">
         {{ page.description }}
       </p>
     {% endif %}
@@ -35,7 +37,7 @@ layout: default
           href="{{ page.external_repo }}"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold bg-slate-900 border border-slate-800 text-brand-teal hover:border-brand-teal hover:bg-brand-teal/5 transition"
+          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold bg-white border border-slate-200 text-brand-teal hover:border-brand-teal hover:bg-brand-teal/5 transition shadow-sm"
         >
           <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
             <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
@@ -46,28 +48,42 @@ layout: default
     {% endif %}
   </header>
 
-  <div class="article-body prose prose-invert prose-slate max-w-none font-serif
-    prose-headings:font-sans prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight
+  {% if hero_image %}
+    <figure class="article-hero -mx-4 sm:mx-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+      <img
+        src="{{ hero_image | relative_url }}"
+        alt="{{ page.title }}"
+        width="1200"
+        height="627"
+        loading="eager"
+        class="w-full h-auto aspect-[1200/627] object-cover"
+      >
+    </figure>
+  {% endif %}
+
+  <div class="article-body prose prose-slate max-w-none font-serif
+    prose-headings:font-sans prose-headings:text-slate-900 prose-headings:font-bold prose-headings:tracking-tight
+    prose-p:text-slate-700
     prose-a:text-brand-teal hover:prose-a:text-brand-crimson prose-a:transition prose-a:no-underline hover:prose-a:underline
-    prose-strong:text-white
-    prose-code:font-mono prose-code:text-brand-teal prose-code:bg-slate-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
-    prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-800 prose-pre:font-mono
-    prose-blockquote:border-brand-crimson prose-blockquote:text-slate-400">
+    prose-strong:text-slate-900
+    prose-code:font-mono prose-code:text-brand-teal prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
+    prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:font-mono
+    prose-blockquote:border-brand-crimson prose-blockquote:text-slate-600 prose-blockquote:bg-slate-50 prose-blockquote:py-1 prose-blockquote:rounded-r-lg">
     {{ content }}
   </div>
 
-  <aside class="mt-12 p-6 rounded-xl border border-slate-900 bg-slate-900/40 flex items-start gap-4">
+  <aside class="mt-12 p-6 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-4">
     <img
       src="{{ site.author.avatar | relative_url }}"
       alt="{{ site.author.name }}"
-      class="h-12 w-12 rounded-full border-2 border-brand-crimson object-cover flex-shrink-0"
+      class="h-12 w-12 rounded-full border-2 border-brand-crimson object-contain bg-white flex-shrink-0"
       width="48"
       height="48"
     >
     <div class="space-y-1">
       <p class="text-[0.65rem] font-mono uppercase tracking-wider text-brand-teal">{{ site.brand.aaif_cohort }}</p>
-      <h2 class="text-sm font-bold text-white">{{ site.author.name }}</h2>
-      <p class="text-xs text-slate-400">{{ site.author.bio }}</p>
+      <h2 class="text-sm font-bold text-slate-900">{{ site.author.name }}</h2>
+      <p class="text-xs text-slate-600">{{ site.author.bio }}</p>
     </div>
   </aside>
 </article>

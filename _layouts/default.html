@@ -1,26 +1,26 @@
 {% include head.html %}
-<body class="flex flex-col min-h-screen bg-slate-950 font-sans antialiased text-slate-200">
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+<body class="flex flex-col min-h-screen bg-white font-sans antialiased text-slate-800">
+  <header class="border-b border-slate-200 bg-white/90 backdrop-blur sticky top-0 z-40 shadow-sm">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3 min-w-0">
         <a href="{{ '/' | relative_url }}" class="flex items-center space-x-3 min-w-0 group">
           <img
             src="{{ site.logo | relative_url }}"
             alt="{{ site.brand.mascot }} — {{ site.title }}"
-            class="h-9 w-9 rounded-lg object-cover ring-2 ring-brand-crimson/40 group-hover:ring-brand-crimson transition"
+            class="h-9 w-9 rounded-lg object-contain bg-white border border-slate-200 group-hover:border-brand-crimson/50 transition"
             width="36"
             height="36"
           >
-          <span class="text-lg font-bold tracking-tight text-white group-hover:text-brand-crimson transition truncate">
+          <span class="text-lg font-bold tracking-tight text-slate-900 group-hover:text-brand-crimson transition truncate">
             Thinking <span class="text-brand-crimson">Inside</span> the Box
           </span>
         </a>
       </div>
 
-      <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-400">
-        <a href="{{ '/' | relative_url }}" class="hover:text-white transition">Articles</a>
-        <a href="{{ '/about/' | relative_url }}" class="hover:text-white transition">About</a>
-        <a href="{{ site.brand.aaif_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-white transition inline-flex items-center gap-1">
+      <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-600">
+        <a href="{{ '/' | relative_url }}" class="hover:text-brand-crimson transition">Articles</a>
+        <a href="{{ '/about/' | relative_url }}" class="hover:text-brand-crimson transition">About</a>
+        <a href="{{ site.brand.aaif_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-brand-crimson transition inline-flex items-center gap-1">
           <span>AAIF Ambassadors</span>
           <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -30,15 +30,15 @@
 
       <!-- Mobile nav -->
       <details class="md:hidden relative">
-        <summary class="list-none cursor-pointer p-2 text-slate-400 hover:text-white transition" aria-label="Open menu">
+        <summary class="list-none cursor-pointer p-2 text-slate-600 hover:text-brand-crimson transition" aria-label="Open menu">
           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </summary>
-        <div class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-800 bg-slate-900 py-2 shadow-xl">
-          <a href="{{ '/' | relative_url }}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Articles</a>
-          <a href="{{ '/about/' | relative_url }}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">About</a>
-          <a href="{{ site.brand.aaif_url }}" target="_blank" rel="noopener noreferrer" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">AAIF Ambassadors</a>
+        <div class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white py-2 shadow-lg">
+          <a href="{{ '/' | relative_url }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Articles</a>
+          <a href="{{ '/about/' | relative_url }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">About</a>
+          <a href="{{ site.brand.aaif_url }}" target="_blank" rel="noopener noreferrer" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">AAIF Ambassadors</a>
         </div>
       </details>
     </div>
@@ -48,21 +48,21 @@
     {{ content }}
   </main>
 
-  <footer class="border-t border-slate-900 bg-slate-950 py-8">
+  <footer class="border-t border-slate-200 bg-slate-50 py-8">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
       <div class="text-center md:text-left">
         <p>&copy; {{ "now" | date: "%Y" }} {{ site.brand.name }}. Technical publication of the {{ site.brand.aaif_cohort }}.</p>
-        <p class="mt-1 text-slate-600">
+        <p class="mt-1 text-slate-400">
           Published by {{ site.author.name }}. Views are the author's and do not necessarily represent Red Hat or the Linux Foundation.
         </p>
       </div>
       <div class="flex flex-wrap items-center justify-center gap-4">
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-medium bg-slate-900 border border-slate-800 text-brand-teal">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-medium bg-white border border-slate-200 text-brand-teal">
           {{ site.brand.aaif_cohort }}
         </span>
-        <a href="https://linkedin.com/in/{{ site.author.linkedin }}" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300 transition">LinkedIn</a>
-        <a href="https://github.com/{{ site.author.github }}" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300 transition">GitHub</a>
-        <a href="{{ '/feed.xml' | relative_url }}" class="hover:text-slate-300 transition">RSS</a>
+        <a href="https://linkedin.com/in/{{ site.author.linkedin }}" target="_blank" rel="noopener noreferrer" class="hover:text-brand-crimson transition">LinkedIn</a>
+        <a href="https://github.com/{{ site.author.github }}" target="_blank" rel="noopener noreferrer" class="hover:text-brand-crimson transition">GitHub</a>
+        <a href="{{ '/feed.xml' | relative_url }}" class="hover:text-brand-crimson transition">RSS</a>
       </div>
     </div>
   </footer>

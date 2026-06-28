@@ -1,16 +1,17 @@
-/* Brand baseline — Tailwind handles most styling via CDN */
+/* Brand baseline — light theme */
 html {
   scroll-behavior: smooth;
 }
 
 ::selection {
-  background-color: rgba(201, 29, 29, 0.35);
-  color: #f8fafc;
+  background-color: rgba(201, 29, 29, 0.18);
+  color: #0f172a;
 }
 
 .highlight {
   border-radius: 0.5rem;
-  border: 1px solid #1e293b;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
 }
 
 .highlight pre {
@@ -20,6 +21,7 @@ html {
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 0.875rem;
   line-height: 1.6;
+  background-color: transparent;
 }
 
 /* Mobile nav: hide default disclosure marker */
@@ -29,4 +31,11 @@ details > summary::-webkit-details-marker {
 
 details > summary {
   list-style: none;
+}
+
+/* Article hero — LinkedIn OG image (1.91:1) */
+.article-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
