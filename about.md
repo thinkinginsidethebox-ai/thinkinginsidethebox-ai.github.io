@@ -75,7 +75,7 @@ permalink: /about/
     <div class="p-6 rounded-xl border border-slate-200 bg-slate-50 flex flex-col gap-4">
       <h2 class="text-sm font-mono uppercase tracking-wider text-brand-teal font-bold">About the Author</h2>
       <div class="flex items-start gap-4">
-        {% include author-avatar.html class="h-16 w-16 rounded-full border-2 border-brand-crimson bg-slate-100 flex-shrink-0 flex items-center justify-center" size=64 %}
+        {% include author-avatar.html class="h-10 w-10 rounded-full border-2 border-brand-crimson object-cover object-top flex-shrink-0" size=40 %}
         <div class="space-y-1">
           <p class="font-sans font-bold text-slate-900">{{ site.author.name }}</p>
           <p class="text-xs text-slate-500 font-medium">{{ site.author.role }}</p>
