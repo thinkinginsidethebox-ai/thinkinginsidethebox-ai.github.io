@@ -1,0 +1,32 @@
+/* Brand baseline — Tailwind handles most styling via CDN */
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background-color: rgba(201, 29, 29, 0.35);
+  color: #f8fafc;
+}
+
+.highlight {
+  border-radius: 0.5rem;
+  border: 1px solid #1e293b;
+}
+
+.highlight pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Mobile nav: hide default disclosure marker */
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details > summary {
+  list-style: none;
+}

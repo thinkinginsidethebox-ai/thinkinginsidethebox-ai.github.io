@@ -1,0 +1,30 @@
+# LinkedIn / Open Graph image registry
+# ─────────────────────────────────────
+# Every post-specific OG image lives in assets/images/og/
+# and MUST be exactly 1200 × 627 px (1.91:1) for LinkedIn previews.
+#
+# Naming: {post-slug}.png  (slug = filename after YYYY-MM-DD-)
+# Example: 2026-06-27-governed-run-loops-for-mcp.md → governed-run-loops-for-mcp.png
+#
+# Reference in post front matter:
+#   image: /assets/images/og/{post-slug}.png
+#
+# jekyll-seo-tag emits og:image, twitter:image, and absolute URLs automatically.
+
+spec:
+  width: 1200
+  height: 627
+  aspect_ratio: "1.91:1"
+  formats: [png, webp]
+  max_file_size_kb: 500
+
+# Site-wide fallback when a post omits `image:` (use a generic brand banner, not a square logo)
+default: /assets/images/og/site-default.png
+
+posts:
+  governed-run-loops-for-mcp:
+    file: governed-run-loops-for-mcp.png
+    path: /assets/images/og/governed-run-loops-for-mcp.png
+    source_post: _posts/2026-06-27-governed-run-loops-for-mcp.md
+    prompt_preset: mascot_prompt_3_linkedin_header
+    status: ready
