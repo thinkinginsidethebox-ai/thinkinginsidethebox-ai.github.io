@@ -47,7 +47,7 @@ This is the outer wall of the box: the first line of defense, but not the only o
 
 ### 2. The Runtime Integration Layer (MCP Middleware)
 
-Once a transaction passes the perimeter, it enters the execution stack. Here, runtime middleware — modeled after frameworks like the Llama Stack serving extension — operates directly over the agent's interaction loop.
+Once a transaction passes the perimeter, it enters the execution stack. Here, runtime middleware — the agent orchestration layer common to frameworks such as LangGraph and Semantic Kernel — operates directly over the agent's interaction loop.
 
 * **Decoupled tool isolation via MCP** — By leveraging the Model Context Protocol, the architecture cleanly decouples corporate databases, local financial tools, and enterprise repositories from core model weights and the immediate context window.
 * **Declarative policy files** — The runtime middleware evaluates actions against structured, configurable policy files (such as YAML configurations) that define strict boundaries for restricted topics — separating general educational content from heavily regulated transactional paths.
