@@ -25,6 +25,6 @@ posts:
   governed-run-loops-for-mcp:
     file: governed-run-loops-for-mcp.png
     path: /assets/images/og/governed-run-loops-for-mcp.png
-    source_post: _posts/2026-06-27-governed-run-loops-for-mcp.md
+    source_post: _posts/2026-06-29-governed-run-loops-for-mcp.md
     prompt_preset: mascot_prompt_3_linkedin_header
     status: ready

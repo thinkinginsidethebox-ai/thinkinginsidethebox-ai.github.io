@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Governed Run Loops: An End-to-End Multi-Layered Policy Architecture for Enterprise AI"
-date: 2026-06-27 18:00:00 +0800
+date: 2026-06-29 09:00:00 +0800
 categories: [AAIF, Security]
 topics: [agentic-safety, metacognition]
 projects: [mcp, agentgateway]
