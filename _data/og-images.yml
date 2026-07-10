@@ -28,3 +28,10 @@ posts:
     source_post: _posts/2026-06-29-governed-run-loops-for-mcp.md
     prompt_preset: mascot_prompt_3_linkedin_header
     status: ready
+
+  spec-driven-development-enterprise-template:
+    file: spec-driven-development-enterprise-template.png
+    path: /assets/images/og/spec-driven-development-enterprise-template.png
+    source_post: _posts/2026-07-10-spec-driven-development-enterprise-template.md
+    prompt_preset: mascot_prompt_3_linkedin_header
+    status: ready

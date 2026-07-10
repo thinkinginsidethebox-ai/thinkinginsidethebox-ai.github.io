@@ -16,6 +16,10 @@ topics:
     label: Evaluation Driven Development
     description: Testable, measurable agent behavior validated through structured evaluation harnesses.
 
+  - slug: spec-driven-development
+    label: Spec-Driven Development
+    description: Phased specification-to-implementation workflows where agents generate code from explicit, governed specs.
+
 projects:
   - slug: mcp
     label: MCP
@@ -26,3 +30,23 @@ projects:
     label: agentgateway
     description: Architectural control plane for intercepting and governing agent tool execution.
     url: "https://github.com/agentgateway/agentgateway"
+
+  - slug: agents-md
+    label: AGENTS.md
+    description: AAIF standard for universal agent context — stack, commands, boundaries, and persona registries.
+    url: "https://agents.md/"
+
+  - slug: spec-kit
+    label: GitHub Spec-Kit
+    description: Spec-driven development toolkit — phased specify, plan, and implement workflows for AI agents.
+    url: "https://github.com/github/spec-kit"
+
+  - slug: codeguard
+    label: CoSAI CodeGuard
+    description: AI model-agnostic security framework with secure-by-default rules for agentic code generation.
+    url: "https://github.com/cosai-oasis/project-codeguard"
+
+  - slug: foundry-security-spec
+    label: Cisco Foundry
+    description: Open specification for agentic AI security evaluation pipelines with Detector and Exploratory roles.
+    url: "https://github.com/CiscoDevNet/foundry-security-spec"
