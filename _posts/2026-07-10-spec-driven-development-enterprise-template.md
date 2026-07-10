@@ -4,14 +4,14 @@ title: "Spec-Driven Development: An Enterprise Base Template for Agentic AI Engi
 date: 2026-07-10 09:00:00 +0800
 categories: [AAIF, Engineering]
 topics: [spec-driven-development, agentic-safety]
-projects: [agents-md, spec-kit, codeguard, foundry-security-spec]
+projects: [agents-md, spec-kit, ogx]
 image: "/assets/images/og/spec-driven-development-enterprise-template.png"
-description: "A practical base template strategy for Python agent development — combining AGENTS.md, GitHub Spec-Kit, CoSAI CodeGuard, and Cisco Foundry into a secure spec-driven workflow."
+description: "A practical base template strategy for Python agent development — combining AGENTS.md, GitHub Spec-Kit, and OGX into a governed spec-driven workflow."
 ---
 
 As AI coding agents transition from unstructured generation — often called "vibe coding" — to structured software engineering, organizations need tighter control over context, security, and architecture. Prompting harder is not enough. Enterprises need a repeatable scaffold that grounds agents in the right stack, forces explicit specification checkpoints, and evaluates output before it merges.
 
-This article outlines a **Secure Spec-Driven Framework (SSDF)** for building a unified Python base template tailored to agentic development. The stack combines LangChain, LangGraph, OGX, and uv — governed by four open-source pillars that together create a predictable, auditable environment for AI-assisted engineering.
+This article outlines a **Secure Spec-Driven Framework (SSDF)** for building a unified Python base template tailored to agentic development. The stack combines LangChain, LangGraph, [**OGX**](https://github.com/ogx-ai/ogx), and uv — governed by four open-source pillars that together create a predictable, auditable environment for AI-assisted engineering.
 
 On this blog, that discipline is **thinking inside the box**: agents read explicit context, follow phased specs, and execute inside boundaries that are inspectable from day one.
 
@@ -143,7 +143,7 @@ You are an enterprise AI engineering agent. Your goal is to write secure, robust
 ## The WHAT: Stack & Architecture
 - **Language**: Python 3.12+
 - **Agent Framework**: LangChain and LangGraph (StateGraphs for all workflows).
-- **Model Connections**: OGX (`ogx-ai`). Never hardcode direct provider SDKs (e.g., `anthropic`).
+- **Model Connections**: [OGX](https://github.com/ogx-ai/ogx) (`ogx-ai`). Never hardcode direct provider SDKs (e.g., `anthropic`).
 
 ## The Boundaries
 - **✅ Always do**: Use `pydantic.BaseModel` for LangChain Tool schemas. Cross-reference `.specify/constitution.md` before writing code.
@@ -171,7 +171,7 @@ Populate `.specify/constitution.md` with:
 
 ## 1. Architectural Standards (Python & AI)
 - **State Management**: All multi-step agent logic MUST be implemented as a `StateGraph` using `langgraph`.
-- **Model Agnosticism**: All language model clients MUST be instantiated via the OGX framework pointing to our internal OpenAI-compatible gateway.
+- **Model Agnosticism**: All language model clients MUST be instantiated via [OGX](https://github.com/ogx-ai/ogx) pointing to our internal OpenAI-compatible gateway.
 - **Typing**: Strict Python type hinting is required.
 
 ## 2. Security (Aligned with CodeGuard for LLMs)
@@ -180,6 +180,7 @@ Populate `.specify/constitution.md` with:
 
 ## 3. Dependency Management
 - **uv ONLY**: The `pyproject.toml` managed by `uv` is the single source of truth. Do not generate `requirements.txt`.
+- **Plan before add**: New packages must appear in the `plan.md` Dependencies section before `uv add` is run during `/speckit.implement`.
 
 ## 4. Testing
 - Agent nodes must be tested in isolation by mocking the LLM response.
@@ -202,6 +203,7 @@ These files define the exact boundaries for the agent depending on which phase o
 2. Design LangGraph `StateGraph` schemas ensuring robust state transitions.
 3. Define strict `pydantic.BaseModel` interfaces for all proposed LangChain Tools.
 4. Output your design strictly to `plan.md` and `tasks.md` in the Spec-Kit format.
+5. Document any new third-party dependencies in a **Dependencies** section of `plan.md` — with package name, rationale, and the phase where they will be added. Do not run `uv add` yourself.
 
 **Constraints**: Ensure all designs strictly adhere to `.specify/constitution.md`.
 ```
@@ -214,8 +216,8 @@ These files define the exact boundaries for the agent depending on which phase o
 **Primary Directive**: You are the Execution Engineer. Your job is to purely execute the `plan.md` created by the Architect. Do NOT attempt to redesign the architecture or add unauthorized features.
 
 **Focus Areas**:
-1. Write the Python code in the `src/` directory.
-2. Use `uv add` for any required dependencies.
+1. Read the **Dependencies** section of `plan.md` and run `uv add <package>` for each authorized package before writing code that imports it.
+2. Write the Python code in the `src/` directory.
 3. Write robust `pytest` unit tests for every node and tool you build.
 4. Run `uv run pytest` autonomously and fix failing tests before concluding implementation.
 
@@ -239,14 +241,71 @@ These files define the exact boundaries for the agent depending on which phase o
 
 ## The Developer Workflow
 
-A day in the life of a developer using this template:
+A day in the life of a developer using this template — including how a new dependency enters the project only when the spec demands it.
 
-1. **Onboarding** — A developer clones `python-ssdf-agent-template`. The IDE agent reads AGENTS.md, registers that uv is required, and learns about the persona registry and CodeGuard boundaries.
-2. **Specification** — The developer types `/speckit.specify Build an automated data-scraper agent node.`
-3. **Clarification** — The agent adopts the @Architect persona (loading `.agents/personas/architect.md`) and runs `/speckit.clarify` to ask: *"Should this scraper node run asynchronously? What should the Pydantic schema look like?"*
-4. **Planning** — The Architect agent generates a plan utilizing LangGraph for the workflow and ensuring `uv add beautifulsoup4` is listed, strictly following `.specify/constitution.md`.
-5. **Implementation** — The developer runs `/speckit.implement`. The agent transitions to the @Engineer persona (loading `.agents/personas/engineer.md`). It focuses strictly on writing the code to satisfy the plan, applying proactive CodeGuard guardrails, writing tests, and running `uv run pytest` until they pass.
-6. **Evaluation** — The developer raises a PR. The `.github/workflows/foundry-eval.yml` CI pipeline triggers the Foundry Security Spec. The CI-driven agentic system invokes the @Reviewer persona to review the implementation, hunt for prompt injection vectors, and leave a structured security report directly on the GitHub PR.
+### 1. Onboarding
+
+A developer clones `python-ssdf-agent-template`. The IDE agent reads AGENTS.md, registers that uv is required, and learns about the persona registry and CodeGuard boundaries.
+
+### 2. Specification
+
+The developer types:
+
+```text
+/speckit.specify Build an agent node that extracts structured metadata from public HTML pages.
+```
+
+The base template already ships with LangChain, LangGraph, OGX, and Pydantic — enough for orchestration and typed tool schemas. It does **not** include an HTML parser. That gap only becomes visible once the feature is specified.
+
+### 3. Clarification
+
+The agent adopts the @Architect persona (loading `.agents/personas/architect.md`) and runs `/speckit.clarify`. Because the spec mentions HTML, the Architect asks targeted questions before any code or dependencies are touched:
+
+- *Should the node accept raw HTML strings or fetch URLs itself?*
+- *What fields belong in the output Pydantic schema — title, author, published date?*
+- *Are there rate limits or allowlisted domains for outbound fetches?*
+
+The answers resolve ambiguity without prematurely adding packages to `pyproject.toml`.
+
+### 4. Planning
+
+The Architect generates `plan.md` and `tasks.md` in Spec-Kit format, strictly following `.specify/constitution.md`. LangGraph handles the workflow; OGX handles model calls. For HTML parsing, the Architect adds an explicit **Dependencies** section to the plan — not a shell command yet, but a documented requirement with rationale:
+
+```markdown
+## Dependencies (new — not in base template)
+
+| Package | Reason | Added in phase |
+| :--- | :--- | :--- |
+| `beautifulsoup4` | Parse messy real-world HTML into structured fields for the metadata tool | `/speckit.implement` |
+```
+
+This is the critical SDD checkpoint: the **why** is captured in the plan before the **how** runs on the terminal. The Architect does not run `uv add` — that belongs to the Engineer persona during implementation, keeping dependency changes auditable and tied to an approved spec.
+
+### 5. Implementation
+
+The developer runs `/speckit.implement`. The agent transitions to the @Engineer persona (loading `.agents/personas/engineer.md`) and executes the plan in order:
+
+1. **Add declared dependencies first** — the Engineer reads the Dependencies table and installs only what the plan authorizes:
+
+```bash
+uv add beautifulsoup4
+```
+
+`uv` updates `pyproject.toml` and the lockfile in one step. AGENTS.md forbids `pip` or hand-edited `requirements.txt`, so this is the only supported path.
+
+2. **Implement the node** — write the LangGraph node and Pydantic tool schemas in `src/`.
+3. **Apply CodeGuard guardrails** — sanitize LLM inputs and outputs at tool boundaries.
+4. **Verify** — write `pytest` coverage for the node (mocking LLM responses per the constitution) and run:
+
+```bash
+uv run pytest -v
+```
+
+The Engineer fixes failures before marking implementation complete. If implementation reveals a *different* library is needed than the one in the plan, the correct action is to stop and return to `/speckit.clarify` or `/speckit.plan` — not to silently `uv add` an unauthorized package.
+
+### 6. Evaluation
+
+The developer raises a PR. The `.github/workflows/foundry-eval.yml` CI pipeline triggers the Foundry Security Spec. The CI-driven agentic system invokes the @Reviewer persona to review the implementation, hunt for prompt injection vectors, and leave a structured security report directly on the GitHub PR.
 
 ---
 

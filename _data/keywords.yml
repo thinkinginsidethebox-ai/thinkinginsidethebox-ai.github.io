@@ -41,12 +41,7 @@ projects:
     description: Spec-driven development toolkit — phased specify, plan, and implement workflows for AI agents.
     url: "https://github.com/github/spec-kit"
 
-  - slug: codeguard
-    label: CoSAI CodeGuard
-    description: AI model-agnostic security framework with secure-by-default rules for agentic code generation.
-    url: "https://github.com/cosai-oasis/project-codeguard"
-
-  - slug: foundry-security-spec
-    label: Cisco Foundry
-    description: Open specification for agentic AI security evaluation pipelines with Detector and Exploratory roles.
-    url: "https://github.com/CiscoDevNet/foundry-security-spec"
+  - slug: ogx
+    label: OGX
+    description: Open GenAI Stack — model-agnostic, OpenAI-compatible agentic API server for any model and infrastructure.
+    url: "https://github.com/ogx-ai/ogx"
