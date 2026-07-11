@@ -1,327 +1,279 @@
 ---
 layout: post
-title: "Spec-Driven Development: Packaging Personas as Portable Context Modules with Lola"
+title: "Spec-Driven Development: Scaling Agentic Governance with Lola"
 date: 2026-07-11 09:00:00 +0800
 categories: [AAIF, Engineering]
 topics: [spec-driven-development, agentic-safety]
 projects: [agents-md, spec-kit, lola]
 image: "/assets/images/og/spec-driven-development-lola-persona-modules.png"
-description: "How to package SSDF Architect, Engineer, and Reviewer personas as a portable Lola AI Context Module — validated against Lola's module structure, install flow, and cross-assistant deployment."
+description: "Day two of enterprise agentic engineering — keeping AGENTS.md lean as a context registry while Lola packages and distributes governed SSDF personas across hundreds of developers and multiple IDEs."
 ---
 
-In the [first article in this series](/2026/07/10/spec-driven-development-enterprise-template.html), we scaffolded `python-ssdf-agent-template` with a hand-maintained `.agents/` directory — personas in `.agents/personas/`, CodeGuard rules in `.agents/skills/codeguard/`, and a root `AGENTS.md` registry that tells the IDE agent which persona to load for each Spec-Kit phase.
+Your platform team ships the template. A developer clones it, runs the bootstrap commands, and for the first time an AI agent writes LangGraph nodes inside a constitution, under a CodeGuard skill, through a phased Spec-Kit loop. Governance works — on that machine, in that repository, on that afternoon.
 
-That structure works for a single repository. It does not scale cleanly when an enterprise needs the **same governed personas** across dozens of agent projects, multiple IDEs, and rotating platform teams. Copy-pasting persona markdown between repos is how context drifts — and drift is how agents revert to `pip`, skip the constitution, or adopt the wrong persona mid-loop.
+That was the story of our [first article](/2026/07/10/spec-driven-development-enterprise-template.html): proving the **Secure Spec-Driven Framework (SSDF)** locally — [**AGENTS.md**](https://agents.md/) as the universal context file every assistant reads on init, Spec-Kit as the process engine, CodeGuard as the proactive shield, Foundry as the reactive evaluator. We showed that agents can be disciplined rather than merely fast when AGENTS.md acts as a structured registry: stack, commands, boundaries, and pointers to session-scoped personas — not a paste bin for every instruction.
 
-This article closes that gap by packaging the SSDF persona layer as a [**Lola**](https://github.com/RedHatProductSecurity/lola) AI Context Module — a portable, versioned bundle that [Lola's module manager](https://lobstertrap.org/lola/guides/modules/) installs into Cursor, Claude Code, Gemini CLI, or OpenCode with a single command.
+Now imagine the next Monday. Security publishes an updated OWASP LLM rule pack. Architecture mandates a new dependency policy in the constitution. And your VP asks you to roll the same governed experience to five hundred engineers — half of whom use Cursor, a third live in Claude Code, and the remainder experiment with Copilot and Gemini CLI.
+
+Establishing the template was day one. **Day two is distribution, maintenance, and enterprise governance.** And day two is where most agentic programs quietly fail.
+
+On this blog, we still call that discipline **thinking inside the box**. The box must simply be shippable.
 
 ---
 
-## The Scaling Problem: Hand-Rolled Context Does Not Travel
+## When the Template Stops Traveling
 
-Article 1 treated context as **repository-local files**:
+The failure mode is rarely the framework itself. It is what happens when a working scaffold leaves the hands of its authors.
 
-```text
-python-ssdf-agent-template/
-├── AGENTS.md
-└── .agents/
-    ├── personas/          # architect.md, engineer.md, reviewer.md
-    └── skills/codeguard/  # owasp-llm-top-10.yml, python-secure-defaults.yml
+**Tool fragmentation** fractures the rollout first. Your @Architect persona lives in `.agents/personas/architect.md`, but Cursor expects skills under `.cursor/`, Claude Code under `.claude/`, and MCP servers under yet another path. A platform engineer who manually copied context into one IDE format has not solved the problem — they have created three divergent forks before lunch.
+
+**Context drift** follows. Security updates the CodeGuard rule packs; three teams patch their repos; two forget. Within a quarter, "SSDF-compliant" means different things in different business units. Auditors ask which version of the guardrails produced a given pull request. Nobody can answer confidently.
+
+**The monolithic prompt trap** is the cruelest failure — and it begins by misunderstanding what AGENTS.md is for. Panicked by drift, organizations paste *everything* into the repository root file — every persona body, every security rule, every architectural preference — until AGENTS.md becomes a small novel. The agent's context window fills before it reads your actual task. Attention fractures. Hallucinations rise. Latency and token costs climb. Developers conclude that "governed agents are slow" and quietly return to vibe coding.
+
+Article 1 established the right pattern: AGENTS.md as a **registry**. Day two is about keeping that registry lean while the content it points to ships at enterprise scale.
+
+To operationalize the SSDF without overwhelming developers or bankrupting the token budget, you need a mechanism to **package, distribute, and update AI contexts dynamically** — the same way mature platform teams ship libraries, not copy-pasted source files.
+
+This is where [**Lola**](https://github.com/LobsterTrap/lola) enters the story.
+
+---
+
+## The Package Manager for Agent Context
+
+If an agent's skills, prompts, and configurations are an RPM package, [**Lola**](https://lobstertrap.org/lola/) is the DNF for them — an AI context package manager from Red Hat Product Security that bridges platform engineering and agentic workflows ([overview](https://developers.redhat.com/articles/2026/04/08/manage-ai-context-lola-package-manager)).
+
+The insight is simple: platform teams should write agent context **once**, version it, and install it wherever developers already work — while **AGENTS.md stays the single front door** the assistant opens first. Lola abstracts the translation layer, mapping the same module to Claude Code's directory layout, Cursor's skill format, Gemini CLI's command structure, or OpenCode's instruction files. It can append a reference back into the repository's AGENTS.md so the agent follows a pointer to governed modules in `.lola/modules/` rather than inheriting a bloated root file ([append-context](https://lobstertrap.org/lola/guides/modules/)). Engineers keep their preferred IDE; compliance does not depend on uniform tooling choices.
+
+Install the CLI once with uv:
+
+```bash
+uv tool install lola-ai
 ```
 
-Three failure modes appear quickly in enterprise rollouts:
-
-1. **Fork drift** — Each team copies the template, then edits personas independently. The @Architect persona in Team A no longer matches Team B's constitution references.
-2. **IDE fragmentation** — Cursor expects skills under `.cursor/rules/`; Claude Code uses `.claude/skills/`. Manual paths do not port without rewrite logic.
-3. **Session bloat** — Article 1 correctly keeps AGENTS.md as a thin registry. But without a packaging layer, teams often paste full persona bodies back into AGENTS.md "just to be safe" — defeating the registry pattern.
-
-The fix is not more markdown in the repo root. It is a **portable context module** with a defined install path — which is exactly what Lola provides.
+From there, distribution looks less like internal wiki instructions and more like the dependency workflows developers already trust.
 
 ---
 
-## What Lola Adds to the SSDF Stack
+## Lean Context: Two AGENTS.md Files, One Philosophy
 
-[**Lola**](https://github.com/RedHatProductSecurity/lola) (LoLaS — Lola modules) is an AI context package manager from Red Hat Product Security. It packages skills, agents, slash commands, and module-level `AGENTS.md` instructions into installable modules that Lola deploys to each assistant's native directory structure.
+Integrating Lola into the SSDF does not replace [**AGENTS.md**](https://agents.md/). It completes the pattern Article 1 started. The AAIF standard defines AGENTS.md as the file assistants read immediately on initialization — the "README for agents." Lola makes that file ** sustainable at scale** by enforcing a **lean context philosophy**: the repository root AGENTS.md stays a registry; the heavy context lives in versioned modules Lola installs and updates.
 
-Lola supports two module shapes. For SSDF, we want the **AI Context Module** — the superset that includes `AGENTS.md`, `skills/`, `commands/`, and `agents/` inside a `module/` directory ([Creating Modules guide](https://lobstertrap.org/lola/guides/creating-modules/)).
+Think of two complementary layers:
 
-| SSDF concept (Article 1) | Lola equivalent | Notes |
+| Layer | Location | Responsibility |
 | :--- | :--- | :--- |
-| Root `AGENTS.md` registry | Repo `AGENTS.md` + `lola install` reference | Keep the registry thin; Lola injects module context |
-| `.agents/personas/*.md` | `module/agents/*.md` | Lola uses **agents**, not personas — same role, standard name |
-| `.agents/skills/codeguard/*.yml` | `module/skills/codeguard/SKILL.md` + `reference/` | Rules become a skill with referenced rule packs |
-| Spec-Kit `/speckit.*` commands | Unchanged — Spec-Kit owns these | Do not duplicate Spec-Kit phases in Lola `commands/` |
-| `.specify/constitution.md` | Stays in the repo | Project-specific law; not portable across teams |
+| **Repository AGENTS.md** | Project root | Stack, uv commands, boundaries, persona *pointers* — what every session needs, nothing more |
+| **Module AGENTS.md** | Inside the Lola package | Persona registry for @Architect, @Engineer, @Reviewer — loaded on demand per Spec-Kit phase |
 
-**Important boundary:** Lola packages **who the agent is and what skills it enforces**. Spec-Kit packages **what gets built and in which phase**. The constitution stays in each repo because architectural law is project-specific; personas and security skills are enterprise-wide.
-
----
-
-## Building the SSDF Context Module
-
-Initialize a Lola AI Context Module alongside the Python template. From the repository root:
-
-```bash
-# Install Lola (see https://github.com/RedHatProductSecurity/lola for platform packages)
-# Then scaffold the module
-lola mod init ssdf-context
-```
-
-This creates the structure Lola documents for AI Context Modules:
+The relationship looks like this:
 
 ```text
-ssdf-context/
-└── module/
-    ├── AGENTS.md              # Module-level SSDF instructions
-    ├── skills/
-    │   └── codeguard/
-    │       ├── SKILL.md       # Skill entry point (agentskills.io format)
-    │       └── reference/     # OWASP LLM rule packs
-    │           ├── owasp-llm-top-10.yml
-    │           └── python-secure-defaults.yml
-    ├── agents/
-    │   ├── architect.md       # @Architect — planning phase only
-    │   ├── engineer.md        # @Engineer — implementation phase only
-    │   └── reviewer.md        # @Reviewer — PR evaluation phase only
-    ├── commands/              # Optional SSDF helpers (NOT Spec-Kit replacements)
-    └── mcps.json              # Optional MCP defaults for the module
+┌─────────────────────────────────────────────────────────────┐
+│  repo/AGENTS.md  (Lean Universal Index — AAIF standard)     │
+│  Stack · uv commands · boundaries · Lola module pointers    │
+└──────────────────────────────┬──────────────────────────────┘
+                               │  lola sync / --append-context
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│  module/AGENTS.md  (Persona registry inside Lola package)   │
+└──────────────────────────────┬──────────────────────────────┘
+         ┌─────────────────────┼─────────────────────┐
+         ▼                     ▼                     ▼
+  [Persona Agents]      [Security Skills]     [Spec-Kit Scaffold]
+   Loaded on demand      (CodeGuard rules)     (.specify/ in repo)
 ```
 
-Register and install into Cursor:
+When an assistant initializes, it reads **repo AGENTS.md first** — the same entry point Article 1 defined. That file tells it to use uv, respect the constitution, and follow the Lola reference to **module AGENTS.md**, which in turn loads the @Architect agent during planning, the @Engineer agent and CodeGuard skill during implementation, the @Reviewer agent at pull request time. Context stays small, hyper-focused, and phase-appropriate.
+
+Three responsibilities decouple cleanly:
+
+* **Repository AGENTS.md** — universal execution boundary for *this project*: stack, commands, and pointers. Never paste full persona bodies here.
+* **Module AGENTS.md** — enterprise-wide persona registry inside the Lola package. Updated centrally; referenced from every SSDF repository.
+* **Spec-Kit** — phase commands and `.specify/constitution.md` remain in each repository. Project-specific law does not belong in either AGENTS.md file.
+
+Lola packages **who the agent is and what skills it enforces** (module layer). Spec-Kit packages **what gets built and in which phase** (repository layer). Confusing the two is how teams duplicate `/speckit.*` commands inside Lola modules — or worse, move the constitution into AGENTS.md and lose per-project architectural law.
+
+---
+
+## From Fifteen Lines of Curl to Three Lines of Intent
+
+To appreciate the shift, compare how a platform engineer bootstraps the Python template from Article 1.
+
+**The old way** was honest but fragile — mkdir, curl, and hope every developer runs the same sequence:
 
 ```bash
-lola mod add ./ssdf-context
-lola install ssdf-context -a cursor
+mkdir python-ssdf-agent-template && cd python-ssdf-agent-template
+git init && uv init --app
+uv add langchain langgraph ogx-ai pydantic python-dotenv
+mkdir -p .specify/templates .specify/scripts && touch .specify/constitution.md
+
+mkdir -p .agents/skills/codeguard
+curl -sL https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/rules/owasp-llm-top-10.yml \
+  -o .agents/skills/codeguard/owasp-llm-top-10.yml
+curl -sL https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/rules/python-secure-defaults.yml \
+  -o .agents/skills/codeguard/python-secure-defaults.yml
+
+mkdir -p .github/workflows
+curl -sL https://raw.githubusercontent.com/CiscoDevNet/foundry-security-spec/main/examples/github-actions/foundry-eval-reference.yml \
+  -o .github/workflows/foundry-eval.yml
+
+touch AGENTS.md
+mkdir -p .agents/personas
+touch .agents/personas/architect.md .agents/personas/engineer.md .agents/personas/reviewer.md
 ```
 
-Lola auto-discovers skills from `skills/*/SKILL.md`, commands from `commands/*.md`, and agents from `agents/*.md` — no manifest file required ([howto-create-modules](https://github.com/RedHatProductSecurity/lola-market/blob/main/docs/howto-create-modules.md)).
+It works once. It does not scale.
 
-After persona or skill changes:
+**The Lola way** keeps the Python and Spec-Kit bootstrap — those are project bones — but replaces hand-curled context with declarative intent:
 
 ```bash
-lola update
+# Same uv and Spec-Kit foundation as Article 1
+mkdir python-ssdf-agent-template && cd python-ssdf-agent-template
+git init && uv init --app
+uv add langchain langgraph ogx-ai pydantic python-dotenv
+mkdir -p .specify/templates .specify/scripts && touch .specify/constitution.md
+
+# Declare governed context the way you declare Python dependencies
+cat <<'EOF' > .lola-req
+enterprise-personas>=1.0.0
+codeguard-rules>=2.0.0
+EOF
+
+lola market add enterprise-core https://internal.corp/ai/enterprise-market.yml
+lola sync
 ```
 
----
+[`lola sync`](https://lobstertrap.org/lola/guides/declarative/) reads `.lola-req`, resolves version-pinned modules from your enterprise marketplace, installs them to detected assistants, and **rewrites repository AGENTS.md to stay lean** — appending module pointers instead of inlining persona bodies. Foundry CI wiring stays in the repository; personas and security skills arrive as a managed package.
 
-## Module File Configurations
-
-### Module AGENTS.md (persona registry)
-
-The module-level `AGENTS.md` replaces the persona *bodies* that Article 1 stored under `.agents/personas/`. The **repository root** `AGENTS.md` stays a short pointer — stack, commands, boundaries — plus a Lola install reference.
-
-Populate `ssdf-context/module/AGENTS.md`:
+After sync, repository AGENTS.md might look like this — same structure Article 1 established, now with Lola pointers instead of embedded personas:
 
 ```markdown
-# SSDF Context Module
+# Enterprise AI Agent Instructions
 
-Enterprise Spec-Driven Development personas for the python-ssdf-agent-template stack.
+## Stack & Commands
+- Install packages: `uv add <package>` (NEVER use `pip`)
+- Agent framework: LangChain, LangGraph, OGX
 
-## Persona Registry
+## Boundaries
+- Cross-reference `.specify/constitution.md` before writing code.
+- Load personas from the Lola module registry — do not adopt all agents at once.
 
-Load ONE agent file from `agents/` based on the active Spec-Kit phase:
-
-| Persona | Spec-Kit phase | Agent file | Role |
-| :--- | :--- | :--- | :--- |
-| **@Architect** | `/speckit.clarify`, `/speckit.plan` | `agents/architect.md` | Design only — LangGraph schemas, Dependencies table in plan.md |
-| **@Engineer** | `/speckit.implement` | `agents/engineer.md` | Execute plan.md — uv add authorized deps, pytest, CodeGuard skill |
-| **@Reviewer** | GitHub PR / CI | `agents/reviewer.md` | Foundry evaluation — Detector + Exploratory roles |
-
-## Skills
-
-- **codeguard** — enforce `.agents/skills/codeguard/` rule packs during implementation.
-  Load when the @Engineer persona is active.
-
-## Cross-references
-
-Before any design or implementation, read the repository `.specify/constitution.md`.
+## Context Modules
+Read module context from `.lola/modules/enterprise-personas/module/AGENTS.md`
 ```
 
-Because this file references other paths inside the module, use Lola's append-context install when deploying:
+The persona table, CodeGuard skill definitions, and @Architect/@Engineer/@Reviewer bodies live in **module AGENTS.md** — one version bump updates every repository that declares `enterprise-personas` in `.lola-req`.
 
-```bash
-lola install ssdf-context -a cursor --append-context module/AGENTS.md
+Fifteen lines of bespoke scripting become three lines of declared intent. More importantly, **updates become a platform concern**, not a developer chore.
+
+---
+
+## Building the Enterprise Supply Chain
+
+Picture your platform team publishing governed context the way they publish internal libraries — through a catalog developers can trust.
+
+### The marketplace as internal App Store
+
+A Lola marketplace is a hosted YAML index pointing at version-controlled Git repositories ([marketplace guide](https://lobstertrap.org/lola/guides/marketplace/)). Your team hosts `enterprise-market.yml` on GitHub Enterprise or an internal artifact server:
+
+```yaml
+name: Enterprise SSDF Marketplace
+description: Secure Spec-Driven Framework components for Corporate AI Engineering
+version: 1.0.0
+modules:
+  - name: enterprise-personas
+    description: SSDF Architect, Engineer, and Reviewer agents
+    version: 1.2.0
+    repository: https://github.com/your-org/lola-ssdf-personas.git
+    tags: [architecture, personas]
+
+  - name: codeguard-rules
+    description: Managed CodeGuard active security filters and rule packs
+    version: 2.0.1
+    repository: https://github.com/your-org/lola-codeguard.git
+    tags: [security, compliance]
 ```
 
-This appends a pointer in the target assistant's instruction file so the agent reads module context from `.lola/modules/ssdf-context/module/AGENTS.md`, preserving relative path resolution ([Module Management — Appending Context References](https://lobstertrap.org/lola/guides/modules/)).
+Developers register it once: `lola market add enterprise-core https://internal.corp/ai/enterprise-market.yml`. Security bumps `codeguard-rules` to 2.0.2; the next `lola sync` on every SSDF repository propagates the patch. No all-hands email. No wiki page that ages out in a week.
 
-### CodeGuard as a Lola skill
+### Packaging what Article 1 invented by hand
 
-Lola expects skills in [AgentSkills.io](https://agentskills.io) `SKILL.md` format — not raw YAML dropped in a folder. Wrap the CodeGuard rule packs:
-
-```markdown
----
-name: codeguard
-description: Enforce OWASP LLM Top 10 and Python secure-defaults during agentic code generation. Load during /speckit.implement.
-allowed-tools: [Read, Write, Edit, Grep]
----
-
-# CoSAI CodeGuard (SSDF)
-
-Apply secure-by-default rules from the reference packs before committing LangChain tools or LangGraph nodes.
-
-## Rule packs
-
-- `./reference/owasp-llm-top-10.yml`
-- `./reference/python-secure-defaults.yml`
-
-## When to activate
-
-Only when executing as @Engineer during `/speckit.implement`. Do not block @Architect planning output.
-```
-
-Copy the YAML rule files from Article 1's curl commands into `module/skills/codeguard/reference/`. Lola rewrites relative paths per assistant — for Cursor, skills land under `.cursor/rules/` with paths adjusted ([howto-create-modules — Path handling table](https://github.com/RedHatProductSecurity/lola-market/blob/main/docs/howto-create-modules.md)).
-
-### Agents (formerly personas)
-
-The @Architect, @Engineer, and @Reviewer content from Article 1 transfers directly into `module/agents/*.md` with Lola agent frontmatter:
-
-```markdown
----
-description: System Architect for SSDF — design LangGraph schemas and plan.md only; never write src/ code.
----
-
-# @Architect Agent
-
-**Primary Directive**: Design the system, not build it. Do NOT write executable Python in `src/`.
-
-**Focus Areas**:
-1. Run `/speckit.clarify` to resolve requirement ambiguities.
-2. Design LangGraph `StateGraph` schemas and Pydantic tool interfaces.
-3. Output to `plan.md` and `tasks.md` in Spec-Kit format.
-4. Document new dependencies in a **Dependencies** table in `plan.md` — package, rationale, phase. Do not run `uv add`.
-
-**Constraints**: Adhere to `.specify/constitution.md`.
-```
-
-Repeat for `engineer.md` and `reviewer.md` using the bodies from Article 1 — the technical content is unchanged; only the packaging location and discovery mechanism differ.
-
----
-
-## Updated Repository Layout
-
-After introducing Lola, the Python template repository looks like this:
+Inside `lola-ssdf-personas`, your team runs `lola mod init corporate-ssdf-personas` and commits an AI Context Module — the same @Architect, @Engineer, and @Reviewer boundaries from Article 1, now portable:
 
 ```text
-python-ssdf-agent-template/
-├── AGENTS.md                   # Thin registry: stack, uv commands, boundaries, Lola module pointer
-├── ssdf-context/               # Lola AI Context Module (versioned, publishable to GitHub)
-│   └── module/
-│       ├── AGENTS.md
-│       ├── skills/codeguard/
-│       ├── agents/
-│       └── commands/
-├── .lola/                      # Lola install state (gitignore in consumer repos)
-├── .specify/                   # Spec-Kit — unchanged from Article 1
-├── .github/workflows/          # Foundry CI — unchanged from Article 1
-├── src/
-└── pyproject.toml
+corporate-ssdf-personas/module/
+├── AGENTS.md           # Persona registry — load one agent per Spec-Kit phase
+├── agents/
+│   ├── architect.md
+│   ├── engineer.md
+│   └── reviewer.md
+└── skills/codeguard/
+    ├── SKILL.md        # AgentSkills.io entry point
+    └── reference/      # OWASP LLM rule packs
 ```
 
-Root `AGENTS.md` shrinks to enterprise stack rules plus:
+Article 1 called them personas under `.agents/personas/` and listed them in repository AGENTS.md. At scale, that coupling breaks — the registry and the persona bodies must separate. Lola standardizes persona files as **`agents/`** inside the module; **module AGENTS.md** holds the phase-to-agent registry that repository AGENTS.md used to carry in full.
 
-```markdown
-## Context Module
+Skills require a `SKILL.md` wrapper referencing rule packs in `./reference/`. When module AGENTS.md cross-references agents and skills by relative path, install with append-context so the repository AGENTS.md pointer resolves inside `.lola/modules/`:
 
-SSDF personas and CodeGuard skills are installed via Lola:
-
-    lola mod add <ssdf-context-repo-url>
-    lola install ssdf-context -a cursor --append-context module/AGENTS.md
-
-Do not paste persona bodies here. Load agents from the Lola module per phase.
+```bash
+lola install enterprise-personas -a cursor --append-context module/AGENTS.md
 ```
+
+Write the module once. Lola maps it to each assistant's native layout — Cursor skills under `.cursor/skills/`, Claude Code under `.claude/skills/` — with automatic path rewriting.
 
 ---
 
-## Developer Workflow: Same Story, Portable Context
+## Scopes, Targets, and the Two Developers in Your Hallway
 
-Revisiting the HTML metadata extractor from Article 1 — the **spec → plan → implement** flow is identical. What changes is **how personas arrive** in the IDE.
+Enterprise reality is messier than a single repository diagram. Lola handles that through **scopes** and **targets**.
 
-### 1. Onboarding
+**Project scope** (the default) installs context into the repository — perfect for SSDF personas tied to a Spec-Kit constitution that differs per product. **User scope** (`--scope user`) installs globally — ideal for baseline security clearances or proxy rules that must follow a developer across every clone.
 
-A developer clones `python-ssdf-agent-template` and installs the SSDF context module:
+When `lola install` runs, it discovers which assistants exist on the machine. Your hallway has two developers: one lives in Cursor, the other in Claude Code. Both run `lola sync` against the same `.lola-req`. Both receive the same governed personas. Neither reformatting step. Neither forced migration.
 
-```bash
-lola mod add https://github.com/your-org/ssdf-context.git
-lola install ssdf-context -a cursor --append-context module/AGENTS.md
-```
+That is the difference between **mandating an IDE** and **mandating an outcome**.
 
-The IDE agent reads root `AGENTS.md` for stack and uv commands, then follows the Lola reference to load module persona registry.
+---
 
-### 2. Specification
+## A Day in the Life — Same Story, Portable Box
 
-```text
-/speckit.specify Build an agent node that extracts structured metadata from public HTML pages.
-```
+Return to the HTML metadata extractor from Article 1. The SSDF narrative does not change. Only the plumbing does.
 
-Spec-Kit owns this command — it is not a Lola slash command. Lola does not replace Spec-Kit; it packages the personas that Spec-Kit phases invoke.
+A developer clones `python-ssdf-agent-template`, runs `lola sync`, and opens Cursor. The assistant reads **repository AGENTS.md** on init — the AAIF entry point — and learns the stack (uv, LangGraph, OGX), the boundaries, and where to find governed personas. It follows the Lola pointer to **module AGENTS.md**, which tells it to load @Architect for the current Spec-Kit phase. They type `/speckit.specify Build an agent node that extracts structured metadata from public HTML pages.`
 
-### 3. Clarification and planning (@Architect)
+Module AGENTS.md routes to `agents/architect.md` for clarification: *Should the node accept raw HTML or fetch URLs? What fields belong in the output schema?* Planning produces a Dependencies table — `beautifulsoup4` documented with rationale, not yet installed. Module AGENTS.md routes to `agents/engineer.md` for implementation; the CodeGuard skill activates; the Engineer runs `uv add beautifulsoup4`, writes the node, and loops on `uv run pytest -v` until green. The pull request triggers @Reviewer through Foundry CI — same evaluation story as before.
 
-On `/speckit.clarify` and `/speckit.plan`, the agent loads `module/agents/architect.md` via the module registry. The Architect asks the same HTML-scoping questions as Article 1 and produces a Dependencies table:
+Nothing about the **spec → plan → implement → evaluate** arc changed. What changed is the **AGENTS.md chain**: repository registry → module registry → phase-scoped agent — every link version-pinned and centrally maintained.
 
-```markdown
-## Dependencies (new — not in base template)
+---
 
-| Package | Reason | Added in phase |
+## Removing the Friction That Kills Adoption
+
+The biggest roadblock to scaling agentic engineering is not model capability. It is friction.
+
+If developers manually copy configurations, track security updates themselves, or switch IDEs to stay compliant, adoption fails — not with a bang, but with a slow drift back to ungoverned autocomplete.
+
+| | Without packaging | With Lola |
 | :--- | :--- | :--- |
-| `beautifulsoup4` | Parse messy HTML into structured metadata fields | `/speckit.implement` |
-```
+| **IDE choice** | Force one tool for consistency | Engineers choose; context translates |
+| **Security patches** | Stale rule packs on local machines | Central bump, `lola sync` propagates |
+| **Context size** | Monolithic AGENTS.md that slows every turn | Lean repo AGENTS.md + module registry on demand |
+| **Audit trail** | "We think they copied the wiki" | Version-pinned `.lola-req` in every repo |
 
-### 4. Implementation (@Engineer + CodeGuard skill)
-
-On `/speckit.implement`, the agent loads `module/agents/engineer.md` and activates the **codeguard** skill. Execution order is unchanged from Article 1:
-
-```bash
-uv add beautifulsoup4
-```
-
-Then implement LangGraph nodes in `src/`, apply CodeGuard sanitization at tool boundaries, and verify:
-
-```bash
-uv run pytest -v
-```
-
-If a different library is needed than planned, stop and return to `/speckit.plan` — the Engineer agent must not silently add packages.
-
-### 5. Evaluation (@Reviewer)
-
-On PR open, Foundry CI invokes the @Reviewer agent from `module/agents/reviewer.md`. The persona content is the same; the install path is now standardized across every repo that installs `ssdf-context`.
-
----
-
-## Lola Validation Checklist
-
-Before publishing `ssdf-context` to your internal GitHub org, verify against Lola's documented capabilities:
-
-| Requirement | Lola support | SSDF usage |
-| :--- | :--- | :--- |
-| Module scaffold | `lola mod init` | Creates `module/AGENTS.md`, `skills/`, `agents/`, `commands/` |
-| Auto-discovery | No manifest needed | Skills, agents, commands picked up by path convention |
-| Cross-assistant install | `lola install -a <assistant>` | `-a cursor` for Cursor; test Claude Code and Gemini CLI for platform teams |
-| Relative path context | `--append-context module/AGENTS.md` | Module AGENTS.md references agents/ and skills/ by relative path |
-| Skill format | `SKILL.md` with `name`, `description` frontmatter | CodeGuard wrapper skill with `reference/*.yml` |
-| Agent format | `agents/*.md` with optional `description` frontmatter | Architect, Engineer, Reviewer |
-| Path rewriting | Automatic per assistant | CodeGuard `./reference/` paths work after Cursor install |
-| Updates | `lola update` | Regenerate after module version bumps |
-| Optional commands | `commands/*.md` with `$ARGUMENTS` | Use for SSDF helpers only — never duplicate `/speckit.*` |
-
-**Known Lola limits to respect:**
-
-- `lola skill init` for standalone skills is planned but not yet released — use full AI Context Module pattern ([Creating Modules](https://lobstertrap.org/lola/guides/creating-modules/)).
-- `--append-context` adds a file-read hop; prefer default install when module files have no cross-references. SSDF needs append-context because module `AGENTS.md` references `agents/` and `skills/` by path.
-- Spec-Kit slash commands remain project-local from Spec-Kit bootstrap — Lola `commands/` are supplemental, not replacements.
+Compliance becomes frictionless. Contexts stay lean. Developers build securely — inside the same box Article 1 defined — without carrying that box by hand.
 
 ---
 
 ## Conclusion
 
-Article 1 proved the SSDF **workflow**: context → spec → code → evaluation, with session-scoped personas and plan-before-add dependencies. This article proves the SSDF **distribution model**: the same personas, skills, and registry logic travel as a versioned Lola module instead of fragile copy-paste.
+Article 1 asked whether governed agentic development could work at all. This article asks whether it can **survive contact with the enterprise** — hundreds of engineers, multiple IDEs, continuous security updates, and the ever-present temptation to solve governance by making prompts longer.
 
-Keep Spec-Kit and the constitution in each repository. Package everything that should be identical across the enterprise — Architect, Engineer, Reviewer, CodeGuard — in `ssdf-context` and install with Lola.
+The answer is packaging — without abandoning AGENTS.md. Treat the AAIF standard as the permanent front door: repository AGENTS.md stays thin; module AGENTS.md carries the persona registry; Lola ships and updates both layers. Version the modules, catalog them, declare them in `.lola-req`, sync them. Keep Spec-Kit and the constitution where project law belongs.
 
-The result is spec-driven development that scales: one module update propagates governed behavior to every agent project, without bloating root AGENTS.md or forking persona markdown.
+That is how AGENTS.md scales from a single-repository registry into enterprise infrastructure — still the first file the agent reads, never the file that breaks the context window.
 
 ---
 
-*This is the second article in the spec-driven development series. Next: Spec-Kit phase gates in depth — how `/speckit.specify`, `/speckit.clarify`, `/speckit.plan`, and `/speckit.implement` enforce checkpoints against the constitution.*
+*This is the second article in the spec-driven development series. Having established local workflow and enterprise distribution, the series next examines how phase gates keep agents from skipping specification checkpoints — and how automated evaluation closes the loop before merge.*

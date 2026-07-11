@@ -49,4 +49,4 @@ projects:
   - slug: lola
     label: Lola
     description: AI context package manager — portable skills, agents, and AGENTS.md modules for cross-assistant deployment.
-    url: "https://github.com/RedHatProductSecurity/lola"
+    url: "https://github.com/LobsterTrap/lola"
