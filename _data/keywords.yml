@@ -45,3 +45,8 @@ projects:
     label: OGX
     description: Open GenAI Stack — model-agnostic, OpenAI-compatible agentic API server for any model and infrastructure.
     url: "https://github.com/ogx-ai/ogx"
+
+  - slug: lola
+    label: Lola
+    description: AI context package manager — portable skills, agents, and AGENTS.md modules for cross-assistant deployment.
+    url: "https://github.com/RedHatProductSecurity/lola"

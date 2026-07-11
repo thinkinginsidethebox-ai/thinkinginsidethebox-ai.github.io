@@ -189,7 +189,7 @@ Populate `.specify/constitution.md` with:
 
 ### Session-Scoped Personas (`.agents/personas/`)
 
-These files define the exact boundaries for the agent depending on which phase of the SDD loop it is executing.
+These files define the exact boundaries for the agent depending on which phase of the SDD loop it is executing. In Article 2 of this series, the same content is repackaged as Lola `module/agents/` files for portable, cross-repo installation.
 
 **`.agents/personas/architect.md`**
 
@@ -315,6 +315,8 @@ By integrating robust Python tooling directly into the AGENTS.md context and the
 
 The result is not a faster autocomplete. It is a disciplined AI engineering partner that reasons, plans, and executes inside a box you can inspect, audit, and evolve.
 
+The template above uses hand-maintained files under `.agents/personas/` and `.agents/skills/` — the right starting point for one repository. The [next article in this series](/2026/07/11/spec-driven-development-lola-persona-modules.html) addresses what happens when that context must travel: packaging the same personas as a portable [**Lola**](https://github.com/RedHatProductSecurity/lola) AI Context Module for cross-repo, cross-IDE deployment.
+
 ---
 
-*This article is part of the thinking inside the box series on enterprise agentic AI. Subsequent posts will walk through individual pillars — AGENTS.md persona design, Spec-Kit phase gates, and Foundry evaluation pipelines — with deeper technical patterns and production configurations.*
+*This is the first article in the spec-driven development series. Subsequent posts cover Lola persona packaging (Article 2), Spec-Kit phase gates (Article 3), and Foundry evaluation pipelines (Article 4) — with deeper technical patterns and production configurations.*

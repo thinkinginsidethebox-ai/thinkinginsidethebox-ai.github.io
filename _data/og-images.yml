@@ -35,3 +35,10 @@ posts:
     source_post: _posts/2026-07-10-spec-driven-development-enterprise-template.md
     prompt_preset: mascot_prompt_3_linkedin_header
     status: ready
+
+  spec-driven-development-lola-persona-modules:
+    file: spec-driven-development-lola-persona-modules.png
+    path: /assets/images/og/spec-driven-development-lola-persona-modules.png
+    source_post: _posts/2026-07-11-spec-driven-development-lola-persona-modules.md
+    prompt_preset: mascot_prompt_3_linkedin_header
+    status: ready
