@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Non-Blocking Human-in-the-Loop Agents: Re-Engineering Agentic Runloops and State Machines with MRTR"
-date: 2026-08-02 00:00:00 +0900
+date: 2026-08-02 09:00:00 +0800
 categories: [AAIF, Engineering]
 topics: [agentic-safety, mcp-2026-07-28]
 projects: [mcp, agentgateway]
