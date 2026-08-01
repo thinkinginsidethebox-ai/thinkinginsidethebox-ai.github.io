@@ -42,3 +42,10 @@ posts:
     source_post: _posts/2026-07-11-spec-driven-development-lola-persona-modules.md
     prompt_preset: mascot_prompt_3_linkedin_header
     status: ready
+
+  non-blocking-hitl-agents-mrtr:
+    file: non-blocking-hitl-agents-mrtr.png
+    path: /assets/images/og/non-blocking-hitl-agents-mrtr.png
+    source_post: _posts/2026-08-02-non-blocking-hitl-agents-mrtr.md
+    prompt_preset: mascot_prompt_3_linkedin_header
+    status: ready
