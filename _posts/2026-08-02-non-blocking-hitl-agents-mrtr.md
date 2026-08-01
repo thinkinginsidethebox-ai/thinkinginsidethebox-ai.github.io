@@ -158,17 +158,14 @@ For setup and run instructions, use the [repository README](https://github.com/c
 
 ## Design takeaways for production
 
-A few rules of thumb follow directly from this pattern.
+A few rules of thumb follow directly from this pattern:
 
-Do not hide human-in-the-loop state in the transport. If the model and the operators cannot see a handle, replicas cannot resume and debugging becomes folklore. Explicit `requestState` beats an ambient session id.
-
-Keep the gateway honest. If your proxy still pins MCP sessions, you have reintroduced sticky routing under a new name. The demo’s project rules forbid `Mcp-Session-Id` for that reason.
-
-Treat the continuation like a capability: integrity protection, time bounds, argument (and ideally principal) binding, and fail-closed verification on every resume.
-
-Keep agent checkpointing and MCP continuation in different buckets. Graph memory helps the UX; server verification of `requestState` is what makes the action safe.
-
-Cap round trips on the client so a misbehaving tool cannot turn “ask once” into an infinite confirmation loop. Prefer gateways that can route on `Mcp-Method` and `Mcp-Name` at the edge, and reserve deep body inspection for audit enrichment rather than basic steering.
+* **Keep HITL state out of the transport.** If the model and operators cannot see a handle, replicas cannot resume and debugging becomes folklore. Explicit `requestState` beats an ambient session id.
+* **Keep the gateway honest.** If your proxy still pins MCP sessions, you have reintroduced sticky routing under a new name. The demo’s project rules forbid `Mcp-Session-Id` for that reason.
+* **Treat the continuation like a capability.** Protect integrity (HMAC or AEAD), bound time, bind arguments (and ideally the authenticated principal), and fail closed on every resume.
+* **Separate agent checkpoints from MCP continuation.** Graph memory helps the UX; server verification of `requestState` is what makes the action safe.
+* **Cap client round trips.** A misbehaving tool must not turn “ask once” into an infinite confirmation loop.
+* **Route on headers at the edge.** Prefer gateways that steer on `Mcp-Method` and `Mcp-Name`, and reserve deep body inspection for audit enrichment rather than basic steering.
 
 MRTR does not replace long-running async work (that is moving into the Tasks extension), and it does not replace your governance stack. It replaces the *fragile pause* — the part that used to couple human think-time to socket lifetime.
 
