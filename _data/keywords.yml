@@ -20,6 +20,10 @@ topics:
     label: Spec-Driven Development
     description: Phased specification-to-implementation workflows where agents generate code from explicit, governed specs.
 
+  - slug: mcp-2026-07-28
+    label: MCP 2026-07-28
+    description: The July 2026 Model Context Protocol revision — stateless core, Multi Round-Trip Requests, header-based routing, and enterprise-scale agent tooling.
+
 projects:
   - slug: mcp
     label: MCP

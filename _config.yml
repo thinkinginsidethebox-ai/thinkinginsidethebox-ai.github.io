@@ -38,6 +38,11 @@ favicon: /assets/images/thinkinginsidethebox.ai_logo_closeup.png
 image: /assets/images/og/site-default.png
 theme_color: "#C91D1D"
 
+# Publish posts even when front-matter dates are slightly ahead of UTC build time.
+# GitHub Pages builds on push only — with the default (future: false), a post dated
+# "tomorrow morning" in APAC never appears until another push after that timestamp.
+future: true
+
 markdown: kramdown
 highlighter: rouge
 kramdown:

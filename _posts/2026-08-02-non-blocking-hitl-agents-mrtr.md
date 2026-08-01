@@ -1,9 +1,9 @@
 ---
 layout: post
 title: "Non-Blocking Human-in-the-Loop Agents: Re-Engineering Agentic Runloops and State Machines with MRTR"
-date: 2026-08-02 09:00:00 +0800
+date: 2026-08-02 00:00:00 +0900
 categories: [AAIF, Engineering]
-topics: [agentic-safety, metacognition]
+topics: [agentic-safety, mcp-2026-07-28]
 projects: [mcp, agentgateway]
 image: "/assets/images/og/non-blocking-hitl-agents-mrtr.png"
 description: "How MCP 2026-07-28 Multi Round-Trip Requests (SEP-2322) let enterprise agents yield for human elicitation without sticky SSE sessions — and how to build a secure, non-blocking HITL harness with LangGraph and agentgateway."
@@ -243,12 +243,12 @@ MRTR does not replace the Tasks extension (`io.modelcontextprotocol/tasks`) for 
 
 This post focused on **non-blocking HITL** — the yield/resume contract that lets enterprise agents ask for confirmation without sticky SSE sessions.
 
-Next articles in the MCP 2026-07-28 series will dig into adjacent capabilities developers need when agents leave the lab:
+Coming articles in this MCP 2026-07-28 series will stay practical and architecture-led, aimed at developers shipping enterprise agents. Expect deep dives across a few focus areas:
 
-* **Header-routable MCP at the perimeter** — `Mcp-Method` / `Mcp-Name`, agentgateway policies, and metering without DPI
-* **Cacheable catalogs and stable tool lists** — `ttlMs` / `cacheScope` and prompt-cache hygiene across reconnects
-* **Tasks as an extension** — poll-based long-running work vs MRTR mid-call interactivity
-* **Auth hardening for enterprise clients** — CIMD, issuer validation, and what DCR deprecation means for agent platforms
+* **L7 topologies and the MCP gateway pattern** — how a session-less core and mandatory routing headers change how remote MCP servers sit behind standard load balancers and reverse proxies, what still belongs at the gateway, and where horizontal scale actually gets easier
+* **Network design for the agentic era** — a wider look at what changes in MCP/agent traffic, what does not, and where the real optimization opportunities sit for platform and infrastructure teams
+* **More reliable tool calling** — using richer JSON Schema (2020-12) patterns so tool definitions validate themselves harder up front and fail less often at runtime
+* **Dynamic discovery in enterprise tool marketplaces** — how agents can find, authorize, match, and invoke tools they were never hand-wired to use, including ontology-driven definitions and joint work with communities such as Data in AI
 
 The box is still there. With MRTR, the pause travels inside the box — signed, time-bounded, and free of open sockets — instead of being welded to a pod that might not exist when the human finally clicks **Confirm**.
 
