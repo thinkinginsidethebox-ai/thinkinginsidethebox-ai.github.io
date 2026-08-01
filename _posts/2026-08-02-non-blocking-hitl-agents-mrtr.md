@@ -6,160 +6,111 @@ categories: [AAIF, Engineering]
 topics: [agentic-safety, mcp-2026-07-28]
 projects: [mcp, agentgateway]
 image: "/assets/images/og/non-blocking-hitl-agents-mrtr.png"
-description: "How MCP 2026-07-28 Multi Round-Trip Requests (SEP-2322) let enterprise agents yield for human elicitation without sticky SSE sessions — and how to build a secure, non-blocking HITL harness with LangGraph and agentgateway."
+description: "How MCP 2026-07-28 Multi Round-Trip Requests let enterprise agents pause for human approval without long-lived server connections — with a LangGraph and agentgateway design walkthrough."
 ---
 
-The [2026-07-28 Model Context Protocol specification](https://blog.modelcontextprotocol.io/posts/2026-07-28/) is the most consequential MCP revision since remote MCP shipped. The headline is a **stateless protocol core**: no `initialize` handshake, no `Mcp-Session-Id`, every request self-describing. For teams building enterprise agents, the operational unlock sits one layer deeper — [**Multi Round-Trip Requests (MRTR)**](https://blog.modelcontextprotocol.io/posts/2026-07-28/#multi-round-trip-requests-mrtr) under SEP-2322.
+If you have built an AI agent that can call tools — query a database, open a ticket, run a migration — you have already met the hard part of enterprise adoption: **when the agent must stop and ask a human before it acts**. Approving a destructive change is not optional in regulated environments. The awkward question is how you pause mid-tool without freezing your infrastructure around that pause.
 
-MRTR is how you keep human-in-the-loop (HITL) approvals, mid-call elicitations, and structured confirmations without parking a long-lived SSE connection on a specific server pod. The server yields. The socket closes. The operator decides. The client retries with a signed continuation handle. Any replica behind a round-robin load balancer can finish the work.
+The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is the open standard many agent stacks now use to talk to tools. Think of it as a shared contract between an agent host and the services that expose capabilities (search, tickets, databases, and so on). Until recently, MCP still carried a lot of desktop-era assumptions: open a session, keep a long-lived connection, and push follow-up questions over that pipe while the server held work in memory.
 
-This article is the first in a series on building production agents against MCP 2026-07-28. We will re-engineer the agentic runloop and the tool-side state machine around MRTR, then walk a working DevOps demo: [**mcp-mrtr-devops-demo**](https://github.com/caldeirav/mcp-mrtr-devops-demo).
+The [2026-07-28 MCP specification](https://blog.modelcontextprotocol.io/posts/2026-07-28/) breaks that model. The protocol core becomes **stateless**: each request stands alone. For human-in-the-loop flows, the important new piece is [**Multi Round-Trip Requests (MRTR)**](https://blog.modelcontextprotocol.io/posts/2026-07-28/#multi-round-trip-requests-mrtr). Instead of holding a network connection open while an operator thinks, the server finishes the HTTP response with “I need input,” hands the client a signed continuation token, and walks away. When the human answers, the client retries. Any healthy server replica can pick up where the first one left off.
 
-On this blog, we still call the discipline **thinking inside the box**. MRTR does not remove the box — it makes the pause *portable*.
+This article is the first in a series on building production agents against MCP 2026-07-28. We will unpack why the old pause failed at scale, how MRTR redesigns both the tool-side and agent-side state machines, and what a working DevOps demo actually proves — without turning this into a clone of the repository README. The reference code lives at [**mcp-mrtr-devops-demo**](https://github.com/caldeirav/mcp-mrtr-devops-demo).
 
----
-
-## The Failure Mode Enterprises Already Know
-
-Imagine an autonomous DevOps agent tasked with an emergency migration on `prod-db-01`. The script is `V004__drop_legacy_users.sql`. Before any `DROP` runs, a human must confirm.
-
-Under the pre-2026 pattern (roughly MCP 2025-11-25 Streamable HTTP), that pause was a transport problem:
-
-1. Client opens a session (`initialize` → `Mcp-Session-Id`).
-2. Client holds a persistent **GET / SSE** stream for server-to-client traffic.
-3. Client POSTs `tools/call`.
-4. Mid-execution, the server **pushes** `elicitation/create` over the open SSE stream while the tool frame stays paused in process memory.
-5. The operator answers; the client POSTs the response; the same pod unblocks and finishes.
-
-That sequence works on a laptop. It collapses under enterprise topology:
-
-* **Sticky routing** — Layer 7 gateways must pin every follow-up to the pod holding the paused thread.
-* **Idle disconnects** — Proxies and WAFs kill quiet SSE sockets; the paused frame dies with them.
-* **Autoscaling & deploys** — Rolling updates terminate streams and discard in-flight HITL state.
-* **Blast radius** — One long-held connection occupies memory and connection-pool capacity for the entire human think-time.
-
-Human approval is a product requirement. Holding an open socket for that approval is an infrastructure accident waiting for a load balancer.
+On this blog we still call the discipline **thinking inside the box**. MRTR does not remove the box. It makes the pause *portable*.
 
 ---
 
-## What 2026-07-28 Changes About the Runloop
+## Why “just ask the human” used to break the network
 
-The new spec retires protocol-level sessions ([SEP-2575](https://blog.modelcontextprotocol.io/posts/2026-07-28/#no-handshake-or-sessions) / SEP-2567). Protocol version, client identity, and capabilities travel in `_meta` on every JSON-RPC request. Optional `server/discover` replaces the handshake when you want capabilities up front — it is not required for `tools/call`.
+Picture an autonomous DevOps agent asked to run an emergency migration on production cluster `prod-db-01`. The script is `V004__drop_legacy_users.sql`. Before any `DROP` executes, a human must confirm.
 
-Streamable HTTP also mandates routing headers ([SEP-2243](https://blog.modelcontextprotocol.io/posts/2026-07-28/#header-based-routing)): `MCP-Protocol-Version`, `Mcp-Method`, and `Mcp-Name`. Gateways such as [**agentgateway**](https://github.com/agentgateway/agentgateway) can authorize and meter on headers without deep-parsing JSON bodies — a natural fit for the perimeter layer we described in [Governed Run Loops](/2026/06/29/governed-run-loops-for-mcp.html).
+Under older MCP Streamable HTTP patterns, that confirmation was implemented as a **transport** problem. The client opened a protocol session, kept a long-lived server-to-client stream (often Server-Sent Events, or SSE — a one-way HTTP channel the server can push messages on), and invoked the tool. Mid-call, the server pushed an elicitation — a structured “please fill this form” request — over the open stream while the tool’s execution frame stayed paused in that process’s memory. When the operator answered, the reply had to reach **the same** server instance so the paused frame could resume.
 
-MRTR is the interactivity piece of that story. Instead of server-initiated pushes over a held stream, the server **completes** the HTTP response with an interim result:
+That design is fine on a laptop. It is fragile behind an enterprise load balancer. The gateway must “stick” the client to one pod (session affinity). Idle proxies time out quiet streams. Rolling deploys and autoscaling kill the pod that was holding the pause. Meanwhile the open connection sits in memory for as long as a human takes to read the dialog — seconds or minutes that your connection pools cannot usefully spend waiting.
 
-| Field | Role |
-| :--- | :--- |
-| `resultType: "input_required"` | Discriminator: this is a yield, not a finished tool result |
-| `inputRequests` | Map of elicitation / sampling-style prompts the client must satisfy |
-| `requestState` | Opaque continuation handle minted by the server |
-
-The client collects answers locally, then **re-issues the same tool call** with `inputResponses` plus the echoed `requestState`. A new JSON-RPC `id` is used (JSON-RPC 2.0 semantics); the continuation is carried in params, not in a session cookie. When work is finished, the server returns `resultType: "complete"`.
-
-SEP-2260 (active-processing constraints) keeps this honest: a server may only solicit input while actively processing a client-initiated request. Spontaneous pop-ups outside that chain of custody are out of bounds.
-
-The mental model shift is simple and sharp:
-
-> **Legacy:** pause the *thread*, keep the *socket*.  
-> **MRTR:** serialize the *state*, close the *socket*, resume on *any* instance.
+Human approval is a product requirement. Holding an open socket for the entire approval is an infrastructure accident waiting for a load balancer.
 
 ---
 
-## Re-Engineering Two State Machines
+## What the new specification changes
 
-MRTR forces a clean split between two machines that older stacks accidentally fused.
+MCP 2026-07-28 retires protocol-level sessions. There is no mandatory `initialize` handshake and no `Mcp-Session-Id` that pins you to one backend. Identity and capabilities travel with each request in a `_meta` object — small structured metadata attached to the JSON-RPC body — so any instance can understand who is calling and what the client supports. If you want to learn a server’s capabilities up front, there is an optional `server/discover` call; you do not need it just to invoke a tool.
 
-### 1. Server tool state machine (continuation, not suspension)
+On the wire, Streamable HTTP also requires a few HTTP headers that name the method and tool (`Mcp-Method`, `Mcp-Name`, plus the protocol version). That sounds pedantic until you run traffic through a gateway such as [**agentgateway**](https://github.com/agentgateway/agentgateway): the perimeter can route and authorize from headers without digging through every JSON body. That fits the perimeter layer we described in [Governed Run Loops](/2026/06/29/governed-run-loops-for-mcp.html).
 
-On the MCP server, a destructive tool no longer blocks waiting for network I/O. It transitions:
+MRTR is how interactivity works once sessions are gone. When a tool needs mid-call input, the server does not push over a held stream. It **completes** the current HTTP response with an interim result. Three fields matter:
 
-`inspect → yield(input_required, requestState) → [connection ends] → verify(requestState) → apply | deny → complete`
+The `resultType` discriminator tells the client whether this is a finished answer (`complete`) or a yield (`input_required`). The `inputRequests` map describes what the client should collect — typically a form elicitation with a JSON Schema the UI can render. The `requestState` value is an opaque continuation handle minted by the server: a sealed snapshot of “where we were,” not a session cookie.
 
-Two practical patterns for `requestState`:
+The client gathers answers in its own UI or terminal, then **re-issues the same tool call** with `inputResponses` and the echoed `requestState`. A new JSON-RPC request id is used (normal JSON-RPC practice); continuity lives in those params, not in transport affinity. When the work is done, the server returns `resultType: "complete"`.
 
-1. **In-payload encapsulation** — Serialize step + binds into a signed or AEAD-encrypted blob; return it to the client. Zero shared store; ideal for horizontally scaled pods.
-2. **Token-keyed external state** — Store rich context in Redis / DynamoDB; put only a handle in `requestState`. Smaller wire payloads; requires TTL eviction and cache ops.
+The protocol also constrains *when* a server may ask. A server may only solicit input while it is actively handling a client-initiated request. That chain of custody keeps agents from spontaneously popping dialogs at the user.
 
-Either way, treat `requestState` as **attacker-controlled input** on the retry path. Minimum controls:
+The mental model is the whole story:
 
-* **Integrity** — HMAC-SHA256 or AEAD so clients and proxies cannot flip `cluster_id` or step flags.
-* **Binding** — Embed the tool arguments (and ideally the authenticated principal) inside the signed payload; reject mismatches on resume.
-* **TTL** — Expire continuations (the demo uses five minutes) to bound replay windows.
-* **Fail closed** — Invalid, expired, or unbound tokens deny the action; never “best effort” into production.
+> **Before:** pause the thread, keep the socket.  
+> **With MRTR:** serialize the state, close the socket, resume on any instance.
 
-### 2. Client agent runloop (non-blocking harness)
+---
 
-On the agent side, frameworks like LangGraph should branch on `resultType`, not on “is the SSE still open?”:
+## Two state machines, deliberately separated
 
-```text
-call_model → call_tool
-               │
-               ├─ resultType == complete  → END
-               │
-               └─ resultType == input_required
-                     → interrupt / collect HITL
-                     → retry_tool (new POST + inputResponses + requestState)
-                     → END
+Older stacks fused “agent waiting for a human” with “server holding a network connection.” MRTR forces you to split them.
+
+### On the server: continue, do not suspend
+
+A destructive tool no longer blocks on network I/O. It inspects the script, decides confirmation is required, mints a continuation, returns `input_required`, and ends the response. Later, on a fresh request, another process — possibly on another machine — verifies the continuation, checks the human’s answers, and either applies or denies.
+
+How you store that continuation is an engineering choice. You can pack the step and bindings into a signed blob and send it entirely in `requestState` (no shared database; excellent for horizontal scale). Or you can park rich context in Redis or similar and put only a handle on the wire (smaller payloads; you now operate a cache with TTLs).
+
+Either way, on the retry path you must treat `requestState` as **attacker-controlled input**. Sign it so clients cannot flip the cluster name or step flags. Bind the tool arguments (and ideally the authenticated user) into what you sign, and reject mismatches. Expire the token so approvals cannot be replayed forever. Fail closed: an invalid or stale continuation denies the action — it never “best efforts” into production.
+
+### On the agent: a non-blocking harness
+
+The agent runloop — the loop that plans, calls tools, and feeds results back to the model — should branch on `resultType`, not on whether a streaming socket is still open. With LangGraph, a natural shape is: call the model, call the tool, and if the tool yields, interrupt for human input, then retry the tool with the answers and the continuation token before finishing.
+
+The harness is responsible for turning an elicitation schema into a UI (or terminal prompts), packaging answers under the keys the server expects, echoing `requestState` exactly, and capping how many round trips a single tool call may take so a buggy server cannot loop the operator forever. Agent-side checkpointing (so your graph can resume after a page refresh) is useful — but it is not a substitute for server-side verification of `requestState`. One is UX continuity; the other is trust.
+
+That separation is the difference between a demo that works once and a fleet that survives a pod recycle while someone is still reading the confirmation dialog.
+
+---
+
+## What the demo is designed to show
+
+The open-source demo [**caldeirav/mcp-mrtr-devops-demo**](https://github.com/caldeirav/mcp-mrtr-devops-demo) is a deliberately small production *shape*, not a full platform. A LangGraph agent asks an MCP tool `apply_db_migration` to run a migration. Tool traffic always goes through **agentgateway** in `statefulMode: stateless` — meaning the proxy is not allowed to invent sticky MCP sessions. The MCP server is a FastAPI endpoint speaking the 2026-07-28 request shape. Continuations are HMAC-SHA256 signed with a five-minute lifetime.
+
+The story the demo walks is the enterprise one: the agent proposes a destructive script; the server yields; the operator confirms in the terminal; the agent retries; the migration completes (simulated) or is denied — and at no point does anyone hold an SSE stream open waiting for the human.
+
+### Server pattern: yield, then verify on resume
+
+On the first call, if the script looks destructive and there is no continuation yet, the server builds an elicitation and mints `requestState`, then returns immediately:
+
+```python
+def _build_input_required(cluster_id: str, script_name: str) -> dict[str, Any]:
+    token = mint_request_state(
+        secret=_hmac_secret(),
+        cluster_id=cluster_id,
+        script_name=script_name,
+    )
+    elicit = ElicitRequest(
+        params=ElicitFormParams(
+            message=(
+                f"Confirm destructive migration on {cluster_id} ({script_name}). "
+                f"environment_tag must be one of: {', '.join(ENVIRONMENT_TAGS)}"
+            ),
+            requestedSchema=build_confirm_drop_schema(),
+        )
+    )
+    return InputRequiredResult(
+        inputRequests={ELICITATION_KEY: elicit},
+        requestState=token,
+    ).model_dump()
 ```
 
-The harness owns:
+The important design choice is what goes into the token. The demo signs `cluster_id`, `script_name`, and an issuance timestamp. On resume it verifies the HMAC, checks the TTL, and rejects tokens that do not match the arguments on the new request. Tampering, expiry, or a forged signature all fail closed before any “apply” path runs.
 
-* Rendering form elicitations from `requestedSchema`
-* Packaging `inputResponses` with the correct keys
-* Echoing `requestState` verbatim
-* Enforcing a **maxRounds** ceiling so a buggy server cannot infinite-loop the operator
-* Keeping agent-side checkpointing (for UX resume) separate from MCP transport state (which must stay in `requestState`)
-
-That separation is the difference between a demo that works once and a fleet that survives a pod recycle mid-approval.
-
----
-
-## Feature Demo: Emergency Migration Agent
-
-The reference implementation is open source: [**caldeirav/mcp-mrtr-devops-demo**](https://github.com/caldeirav/mcp-mrtr-devops-demo).
-
-Stack:
-
-| Layer | Choice |
-| :--- | :--- |
-| Agent runloop | LangGraph + `interrupt()` for HITL |
-| LLM | LM Studio (OpenAI-compatible local model) |
-| L7 proxy | **agentgateway** with `statefulMode: stateless` on `:8080` |
-| MCP server | FastAPI Streamable HTTP on `:8000` |
-| Continuations | HMAC-SHA256 `requestState` (5-minute TTL) |
-
-Logical path:
-
-```text
-Operator terminal
-      │
-      ▼
-main.py harness  →  LangGraph agent
-                        │
-                        │  tools/call (Mcp-Method / Mcp-Name headers)
-                        ▼
-                 agentgateway :8080  (stateless)
-                        │
-                        ▼
-                 MCP server :8000
-                        │
-          ┌─────────────┴─────────────┐
-          │ input_required + HMAC     │ complete
-          │ requestState              │
-          └─────────────┬─────────────┘
-                        │
-              terminal HITL prompts
-                        │
-              retry + inputResponses
-```
-
-### Yield shape (server)
-
-When `apply_db_migration` sees a destructive script and no valid resume yet, it mints a signed continuation and returns an elicitation form — then **ends the HTTP response**. No SSE GET. No `Mcp-Session-Id`.
-
-Conceptually:
+Conceptually, the yield the client sees looks like this — a finished HTTP response, not a parked connection:
 
 ```json
 {
@@ -183,74 +134,53 @@ Conceptually:
 }
 ```
 
-In the demo, `requestState` binds `cluster_id` + `script_name` + issuance time under HMAC-SHA256. A retry that tampers with arguments, waits past TTL, or forges the signature fails closed.
+### Client pattern: branch on resultType, interrupt, retry
 
-### Client retry (LangGraph)
+The LangGraph graph is intentionally boring — and that is the point. After `call_tool`, routing looks only at the protocol discriminator:
 
-The graph routes `input_required` into a `human_input` node that calls LangGraph `interrupt()`. The terminal collects `confirm_drop` and `environment_tag`. `retry_tool` issues a **new** POST through agentgateway with the same tool arguments, plus:
-
-```json
-{
-  "inputResponses": {
-    "risk_confirmation": {
-      "action": "accept",
-      "content": {
-        "confirm_drop": true,
-        "environment_tag": "prod"
-      }
-    }
-  },
-  "requestState": "<echoed verbatim>"
-}
+```python
+def route_after_tool(state: AgentState) -> Literal["human_input", "done"]:
+    if state.get("error"):
+        return "done"
+    result = state.get("last_result") or {}
+    if result.get("resultType") == "input_required":
+        return "human_input"
+    return "done"
 ```
 
-Because agentgateway is configured `statefulMode: stateless`, that retry is free to land on any healthy MCP instance. The verifying replica does not need the original thread — only the shared HMAC secret and the tool arguments on the wire.
+The `human_input` node uses LangGraph’s `interrupt()` so the graph parks without blocking the MCP server. When the operator answers, `retry_tool` issues a **new** HTTP POST through the gateway with the same tool arguments, plus `inputResponses` and the echoed `requestState`. The verifying replica does not need the original thread — only the shared signing secret and the arguments on the wire.
 
-### Run it
+That is the design claim the demo exists to prove: mid-call human approval can be a pair of short, independent requests behind a round-robin gateway, not a sticky conversation glued to one pod.
 
-Prerequisites: Python 3.11+, [uv](https://github.com/astral-sh/uv), [LM Studio](https://lmstudio.ai/) on `:1234`, [agentgateway](https://agentgateway.dev/docs/standalone/latest/deployment/binary) on `PATH`.
-
-```bash
-git clone https://github.com/caldeirav/mcp-mrtr-devops-demo.git
-cd mcp-mrtr-devops-demo
-cp .env.example .env   # set MCP_HMAC_SECRET, MODEL_NAME, ports
-uv sync --group dev
-uv run python main.py
-```
-
-When the HITL band appears, happy-path answers are `confirm_drop=true` and `environment_tag=prod`. Try `confirm_drop=false` or an out-of-allow-list tag to see fail-closed `complete` denials — still without sticky sessions.
-
-The harness prints banded traces (`TRACE` / `AGENT` / `HITL` / `SEP`) that call out exactly which 2026-07-28 fields appeared on the wire. That is intentional: protocol literacy beats folklore when you are migrating a fleet.
+For setup and run instructions, use the [repository README](https://github.com/caldeirav/mcp-mrtr-devops-demo). The harness’s banded traces (`TRACE`, `AGENT`, `HITL`, `SEP`) are there to make the new wire fields visible while you watch a single happy path — useful when you are teaching a team what changed, less useful as a substitute for reading the protocol.
 
 ---
 
-## What to Take Into Production Designs
+## Design takeaways for production
 
-A few engineering rules of thumb from shipping this pattern:
+A few rules of thumb follow directly from this pattern.
 
-1. **Do not hide HITL in the transport.** If the model cannot see a handle, operators cannot debug it and replicas cannot resume it. Explicit `requestState` beats ambient `Mcp-Session-Id`.
-2. **Keep gateway mode honest.** If your proxy still pins sessions, you have not adopted the stateless core — you have reintroduced sticky routing under a new name. The demo’s constitution forbids `Mcp-Session-Id` for this reason.
-3. **Secure the continuation like a capability.** HMAC (or AEAD), TTL, principal/argument binding, and single-use nonces where your threat model demands them.
-4. **Separate agent checkpointing from MCP continuation.** LangGraph `MemorySaver` (or a durable checkpointer) improves UX; it must not become a substitute for verifying `requestState` on the server.
-5. **Cap round trips.** A client-side `maxRounds` (typically 3–5) is a harness safety rail against pathological servers.
-6. **Prefer header-aware gateways.** Route and authorize on `Mcp-Method` / `Mcp-Name` at the perimeter; keep deep body inspection for audit enrichment, not for basic routing.
+Do not hide human-in-the-loop state in the transport. If the model and the operators cannot see a handle, replicas cannot resume and debugging becomes folklore. Explicit `requestState` beats an ambient session id.
 
-MRTR does not replace the Tasks extension (`io.modelcontextprotocol/tasks`) for long-running async work, and it does not replace your governance stack. It replaces the *fragile pause* — the part that used to couple human latency to socket lifetime.
+Keep the gateway honest. If your proxy still pins MCP sessions, you have reintroduced sticky routing under a new name. The demo’s project rules forbid `Mcp-Session-Id` for that reason.
+
+Treat the continuation like a capability: integrity protection, time bounds, argument (and ideally principal) binding, and fail-closed verification on every resume.
+
+Keep agent checkpointing and MCP continuation in different buckets. Graph memory helps the UX; server verification of `requestState` is what makes the action safe.
+
+Cap round trips on the client so a misbehaving tool cannot turn “ask once” into an infinite confirmation loop. Prefer gateways that can route on `Mcp-Method` and `Mcp-Name` at the edge, and reserve deep body inspection for audit enrichment rather than basic steering.
+
+MRTR does not replace long-running async work (that is moving into the Tasks extension), and it does not replace your governance stack. It replaces the *fragile pause* — the part that used to couple human think-time to socket lifetime.
 
 ---
 
-## Series Roadmap
+## Series roadmap
 
-This post focused on **non-blocking HITL** — the yield/resume contract that lets enterprise agents ask for confirmation without sticky SSE sessions.
+This post focused on non-blocking human-in-the-loop design: how agents ask for confirmation without sticky streams.
 
-Coming articles in this MCP 2026-07-28 series will stay practical and architecture-led, aimed at developers shipping enterprise agents. Expect deep dives across a few focus areas:
+Coming articles in this MCP 2026-07-28 series will stay practical and architecture-led for developers shipping enterprise agents. We will look at how session-less MCP and mandatory routing headers reshape Layer-7 topologies and the MCP gateway pattern; take a wider pass at network design for the agentic era — what changes, what does not, and where the real opportunities sit; dig into richer JSON Schema patterns that make tool definitions fail less often at runtime; and explore dynamic discovery in enterprise tool marketplaces, including ontology-driven definitions and collaboration with communities such as Data in AI.
 
-* **L7 topologies and the MCP gateway pattern** — how a session-less core and mandatory routing headers change how remote MCP servers sit behind standard load balancers and reverse proxies, what still belongs at the gateway, and where horizontal scale actually gets easier
-* **Network design for the agentic era** — a wider look at what changes in MCP/agent traffic, what does not, and where the real optimization opportunities sit for platform and infrastructure teams
-* **More reliable tool calling** — using richer JSON Schema (2020-12) patterns so tool definitions validate themselves harder up front and fail less often at runtime
-* **Dynamic discovery in enterprise tool marketplaces** — how agents can find, authorize, match, and invoke tools they were never hand-wired to use, including ontology-driven definitions and joint work with communities such as Data in AI
-
-The box is still there. With MRTR, the pause travels inside the box — signed, time-bounded, and free of open sockets — instead of being welded to a pod that might not exist when the human finally clicks **Confirm**.
+The box is still there. With MRTR, the pause travels inside it — signed, time-bounded, and free of open sockets — instead of being welded to a pod that might not exist when the human finally clicks **Confirm**.
 
 ---
 
