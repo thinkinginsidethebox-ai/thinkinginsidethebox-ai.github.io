@@ -1,0 +1,40 @@
+# Author registry for multi-author posts.
+# Reference by slug in post front matter:
+#   author: christopher-nuland
+# Omit `author` (or use vincent-caldeira) for the default publisher.
+#
+# Optional keys: linkedin, github, url, twitter, aaif (bool)
+
+vincent-caldeira:
+  name: Vincent Caldeira
+  initials: VC
+  role: Red Hat APAC CTO · Columbia University Visiting Scholar · AAIF Ambassador
+  url: "https://www.linkedin.com/in/vincentcaldeira"
+  twitter: vcaldeira
+  linkedin: vincentcaldeira
+  github: caldeirav
+  photo: /assets/images/vincent-caldeira.jpeg
+  aaif: true
+  bio: >-
+    Vincent Caldeira, Red Hat APAC CTO and Industry Visiting Scholar at Columbia University,
+    drives tech strategy and emerging technology engineering. A Top 10 APAC CTO (2023) with
+    20+ years in finance IT, he is an authority on open source, cloud-native technologies and AI.
+    Vincent holds leadership roles across the Linux Foundation (FINOS, LF AI & Data, Agentic AI
+    Foundation, CNCF) and GSF, championing AI safety, sustainability, and digital sovereignty.
+
+christopher-nuland:
+  name: Christopher Nuland
+  initials: CN
+  role: Chief AI Architect, Red Hat
+  photo: /assets/images/christopher-nuland.png
+  aaif: false
+  bio: >-
+    Christopher Nuland serves as the Chief AI Architect at Red Hat, specializing in AI adoption,
+    Inference, Agentic, cloud-native migrations, AIOps, and metrics-driven transformations. He brings
+    a robust background in leading machine learning and big data analytics initiatives across various
+    industries and verticals.
+
+    Currently, his research focuses on semantic routing in enterprise configurations. Christopher is
+    actively involved in the PyTorch community and serves as a governing member of the vLLM Semantic
+    Router community. A prominent keynote speaker, he has shared his expertise at global conferences
+    such as KubeCon US/EU, IBM Think, and PyTorch Con.

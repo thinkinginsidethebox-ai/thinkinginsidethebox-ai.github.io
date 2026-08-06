@@ -49,3 +49,10 @@ posts:
     source_post: _posts/2026-08-02-non-blocking-hitl-agents-mrtr.md
     prompt_preset: mascot_prompt_3_linkedin_header
     status: ready
+
+  over-harnessing-context-file-cost:
+    file: over-harnessing-context-file-cost.png
+    path: /assets/images/og/over-harnessing-context-file-cost.png
+    source_post: _posts/2026-08-06-over-harnessing-context-file-cost.md
+    prompt_preset: guest_technical_corporate
+    status: ready

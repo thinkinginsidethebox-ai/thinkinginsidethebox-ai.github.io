@@ -2,6 +2,7 @@
 layout: default
 ---
 {% assign hero_image = page.image | default: site.image %}
+{% include resolve-author.html %}
 
 <article class="space-y-8">
   <header class="space-y-4 pb-6 border-b border-slate-200">
@@ -15,6 +16,8 @@ layout: default
       <time class="text-slate-500" datetime="{{ page.date | date_to_xmlschema }}">
         {{ page.date | date: "%B %d, %Y" }}
       </time>
+      <span class="text-slate-300" aria-hidden="true">•</span>
+      <span class="text-slate-500">{{ author.name }}</span>
       {% if page.coauthors %}
         <span class="text-slate-300" aria-hidden="true">•</span>
         <span class="text-slate-500">Co-authored with {{ page.coauthors | join: ", " }}</span>
@@ -79,12 +82,16 @@ layout: default
   </div>
 
   <aside class="mt-12 p-6 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-4">
-    {% include author-avatar.html %}
+    {% include author-avatar.html author=author %}
     <div class="space-y-1">
-      <p class="text-[0.65rem] font-mono uppercase tracking-wider text-brand-teal">{{ site.brand.aaif_cohort }}</p>
-      <h2 class="text-sm font-bold text-slate-900">{{ site.author.name }}</h2>
-      <p class="text-xs text-slate-500 font-medium">{{ site.author.role }}</p>
-      <p class="text-xs text-slate-600 leading-relaxed">{{ site.author.bio }}</p>
+      {% if author.aaif %}
+        <p class="text-[0.65rem] font-mono uppercase tracking-wider text-brand-teal">{{ site.brand.aaif_cohort }}</p>
+      {% else %}
+        <p class="text-[0.65rem] font-mono uppercase tracking-wider text-brand-teal">Contributing Author</p>
+      {% endif %}
+      <h2 class="text-sm font-bold text-slate-900">{{ author.name }}</h2>
+      <p class="text-xs text-slate-500 font-medium">{{ author.role }}</p>
+      <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{{ author.bio }}</p>
     </div>
   </aside>
 </article>

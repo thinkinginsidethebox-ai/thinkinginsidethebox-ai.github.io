@@ -1,0 +1,11 @@
+{% comment %}
+  Resolve post author from front matter slug → site.data.authors, else site.author.
+  Usage: {% include resolve-author.html %}
+  Sets: author (hash), author_key (string)
+{% endcomment %}
+{% assign author_key = include.key | default: page.author | default: "vincent-caldeira" %}
+{% assign author = site.data.authors[author_key] %}
+{% if author == nil %}
+  {% assign author = site.author %}
+  {% assign author_key = "vincent-caldeira" %}
+{% endif %}

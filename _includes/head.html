@@ -6,8 +6,13 @@
   <meta name="theme-color" content="#ffffff">
   <link rel="icon" href="{{ site.favicon | relative_url }}" type="image/png">
   {% seo %}
-  {% if page.date and site.author.url %}
-    <meta property="article:author" content="{{ site.author.url }}" />
+  {% if page.date %}
+    {% include resolve-author.html %}
+    {% if author.url %}
+      <meta property="article:author" content="{{ author.url }}" />
+    {% elsif site.author.url %}
+      <meta property="article:author" content="{{ site.author.url }}" />
+    {% endif %}
   {% endif %}
 
   <!-- Typography: Inter (UI), Merriweather (long-form), JetBrains Mono (code) -->

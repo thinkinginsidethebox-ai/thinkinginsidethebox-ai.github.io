@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Articles
-description: Agentic AI articles by Vincent Caldeira, AAIF Ambassador — on safety, metacognition, evaluation-driven development, MCP, and agentgateway.
+description: Agentic AI articles by Vincent Caldeira and collaborating authors — on safety, metacognition, evaluation-driven development, MCP, and agentgateway.
 ---
 
 <section class="space-y-10">
@@ -25,11 +25,10 @@ description: Agentic AI articles by Vincent Caldeira, AAIF Ambassador — on saf
     </div>
 
     <p class="text-slate-600 text-sm leading-relaxed max-w-3xl">
-      Articles on agentic AI by <strong class="text-slate-800">{{ site.author.name }}</strong>,
-      published as part of the
+      Articles on agentic AI hosted by <strong class="text-slate-800">{{ site.author.name }}</strong>
+      and written with <strong class="text-slate-800">collaborating authors</strong>, published as part of the
       <a href="{{ site.brand.aaif_url }}" class="text-brand-teal hover:text-brand-crimson transition" target="_blank" rel="noopener noreferrer">Agentic AI Foundation Ambassador</a>
-      program — solo or co-authored technical writing on enterprise agent architecture,
-      safety, and open-source interoperability.
+      program — technical writing on enterprise agent architecture, safety, and open-source interoperability.
     </p>
 
     <div class="space-y-2">
@@ -56,6 +55,8 @@ description: Agentic AI articles by Vincent Caldeira, AAIF Ambassador — on saf
       <ul class="space-y-6">
         {% for post in posts %}
           {% assign card_image = post.image | default: site.image %}
+          {% assign author_key = post.author | default: "vincent-caldeira" %}
+          {% assign card_author = site.data.authors[author_key] | default: site.author %}
           <li>
             <article class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-brand-crimson/30 hover:shadow-md transition">
               <a href="{{ post.url | relative_url }}" class="block">
@@ -74,6 +75,8 @@ description: Agentic AI articles by Vincent Caldeira, AAIF Ambassador — on saf
                 <div class="p-5 space-y-3">
                   <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                     <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%B %d, %Y" }}</time>
+                    <span aria-hidden="true">·</span>
+                    <span>{{ card_author.name }}</span>
                     {% if post.categories.size > 0 %}
                       <span aria-hidden="true">·</span>
                       <span class="text-brand-crimson font-mono uppercase">{{ post.categories | join: " · " }}</span>

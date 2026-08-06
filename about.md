@@ -1,7 +1,7 @@
 ---
 layout: default
 title: About
-description: About thinkinginsidethebox.ai — agentic AI articles by Vincent Caldeira, AAIF Ambassador.
+description: About thinkinginsidethebox.ai — agentic AI articles by Vincent Caldeira and collaborating authors.
 permalink: /about/
 ---
 
@@ -10,9 +10,9 @@ permalink: /about/
     <p class="text-xs font-mono uppercase tracking-wider text-brand-teal">{{ site.brand.aaif_cohort }}</p>
     <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">About This Publication</h1>
     <p class="text-lg text-slate-600 leading-relaxed">
-      <strong class="text-slate-800">{{ site.brand.domain }}</strong> is where
-      <strong class="text-slate-800">{{ site.author.name }}</strong> publishes agentic AI articles —
-      solo or co-authored — as part of the Agentic AI Foundation Ambassador program.
+      <strong class="text-slate-800">{{ site.brand.domain }}</strong> is a technical publication on agentic AI,
+      hosted by <strong class="text-slate-800">{{ site.author.name }}</strong> as part of the Agentic AI Foundation
+      Ambassador program and open to <strong class="text-slate-800">collaborating authors</strong>.
       The site covers enterprise agent architecture, open protocols, and the engineering
       practices needed to run autonomous systems safely in production.
     </p>
@@ -71,45 +71,60 @@ permalink: /about/
     {% endfor %}
   </ul>
 
-  <div class="not-prose grid gap-6 sm:grid-cols-2">
-    <div class="p-6 rounded-xl border border-slate-200 bg-slate-50 flex flex-col gap-4">
-      <h2 class="text-sm font-mono uppercase tracking-wider text-brand-teal font-bold">About the Author</h2>
-      <div class="flex items-start gap-4">
-        {% include author-avatar.html class="h-10 w-10 rounded-full border-2 border-brand-crimson object-cover object-top flex-shrink-0" size=40 %}
-        <div class="space-y-1">
-          <p class="font-sans font-bold text-slate-900">{{ site.author.name }}</p>
-          <p class="text-xs text-slate-500 font-medium">{{ site.author.role }}</p>
+  <div class="space-y-4">
+    <h2 class="text-sm font-mono uppercase tracking-wider text-brand-teal font-bold">Authors</h2>
+    <p class="text-sm text-slate-600 leading-relaxed max-w-3xl">
+      Articles are written by the host author and invited collaborators. Each byline links
+      the piece to the person who wrote it; guest posts appear with the contributing author's profile.
+    </p>
+    <div class="not-prose grid gap-6 sm:grid-cols-2">
+      {% for author_entry in site.data.authors %}
+        {% assign author = author_entry[1] %}
+        <div class="p-6 rounded-xl border border-slate-200 bg-slate-50 flex flex-col gap-4">
+          <div class="flex items-start gap-4">
+            {% include author-avatar.html author=author class="h-10 w-10 rounded-full border-2 border-brand-crimson object-cover object-top flex-shrink-0" size=40 %}
+            <div class="space-y-1">
+              <p class="font-sans font-bold text-slate-900">{{ author.name }}</p>
+              <p class="text-xs text-slate-500 font-medium">{{ author.role }}</p>
+              {% if author.aaif %}
+                <p class="text-[0.65rem] font-mono uppercase tracking-wider text-brand-teal">Host · {{ site.brand.aaif_cohort }}</p>
+              {% else %}
+                <p class="text-[0.65rem] font-mono uppercase tracking-wider text-brand-teal">Contributing Author</p>
+              {% endif %}
+            </div>
+          </div>
+          <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{{ author.bio }}</p>
+          {% if author.aaif %}
+            <p class="pt-1">
+              <a href="{{ site.brand.aaif_url }}" target="_blank" rel="noopener noreferrer" class="text-brand-teal hover:text-brand-crimson transition text-sm font-sans font-medium">
+                AAIF Ambassador Program →
+              </a>
+            </p>
+          {% endif %}
         </div>
-      </div>
-      <p class="text-sm text-slate-600 leading-relaxed">{{ site.author.bio }}</p>
-      <p class="pt-1">
-        <a href="{{ site.brand.aaif_url }}" target="_blank" rel="noopener noreferrer" class="text-brand-teal hover:text-brand-crimson transition text-sm font-sans font-medium">
-          AAIF Ambassador Program →
-        </a>
-      </p>
-    </div>
+      {% endfor %}
 
-    <div class="p-6 rounded-xl border border-slate-200 bg-white flex flex-col gap-4">
-      <h2 class="text-sm font-mono uppercase tracking-wider text-brand-crimson font-bold">Brand Mascot</h2>
-      <div class="flex items-start gap-4">
-        <img
-          src="{{ site.brand.mascot_logo | relative_url }}"
-          alt="{{ site.brand.mascot }}"
-          class="h-16 w-16 rounded-xl object-contain bg-white border border-slate-200 flex-shrink-0"
-          width="64"
-          height="64"
-        >
-        <div class="space-y-1">
-          <p class="font-sans font-bold text-slate-900">{{ site.brand.mascot }}</p>
-          <p class="text-xs text-slate-500">Publication brand emblem</p>
+      <div class="p-6 rounded-xl border border-slate-200 bg-white flex flex-col gap-4 sm:col-span-2">
+        <h2 class="text-sm font-mono uppercase tracking-wider text-brand-crimson font-bold">Brand Mascot</h2>
+        <div class="flex items-start gap-4">
+          <img
+            src="{{ site.brand.mascot_logo | relative_url }}"
+            alt="{{ site.brand.mascot }}"
+            class="h-16 w-16 rounded-xl object-contain bg-white border border-slate-200 flex-shrink-0"
+            width="64"
+            height="64"
+          >
+          <div class="space-y-1">
+            <p class="font-sans font-bold text-slate-900">{{ site.brand.mascot }}</p>
+            <p class="text-xs text-slate-500">Publication brand emblem</p>
+          </div>
         </div>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          {{ site.brand.mascot }} is the visual emblem of {{ site.brand.domain }} — a minimalist
+          robot who guides agent reasoning safely inside the Box. The mascot represents the
+          publication's brand identity and is distinct from the authors behind the articles.
+        </p>
       </div>
-      <p class="text-sm text-slate-600 leading-relaxed">
-        {{ site.brand.mascot }} is the visual emblem of {{ site.brand.domain }} — a minimalist
-        robot who guides agent reasoning safely inside the Box. The mascot represents the
-        publication's brand identity and is distinct from {{ site.author.name }}, the author
-        and AAIF Ambassador behind the articles.
-      </p>
     </div>
   </div>
 </section>
