@@ -56,3 +56,10 @@ posts:
     source_post: _posts/2026-08-06-over-harnessing-context-file-cost.md
     prompt_preset: guest_technical_corporate
     status: ready
+
+  spec-driven-development-agents-md-at-scale:
+    file: spec-driven-development-agents-md-at-scale.png
+    path: /assets/images/og/spec-driven-development-agents-md-at-scale.png
+    source_post: _posts/2026-08-16-spec-driven-development-agents-md-at-scale.md
+    prompt_preset: mascot_cinematic_archive
+    status: ready
