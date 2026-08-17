@@ -1,0 +1,27 @@
+---
+description: Writing guidelines for Thinking Inside the Box articles
+globs: "_posts/**/*.md"
+alwaysApply: true
+---
+
+# Article writing
+
+Stay close to the source article. Blog integration is light-touch only: Jekyll front matter, working links, and code/examples aligned to a real repo when one exists. Do not rewrite voice, add slogans, or invent framing the source did not use.
+
+## Do not add brand asides
+
+- Do not insert "thinking inside the box", "the box", or other publication taglines unless the source already uses them or the user explicitly asks.
+- Do not add series recaps, editorial philosophy paragraphs, or mascot copy to the body.
+
+## Demo repos
+
+- Treat linked repositories as **example implementations**, not "reference architectures", unless the user says otherwise.
+- Do not lead the article with the repo. Introduce it when the piece turns to concrete implementation — typically the later pillars or the closing section.
+
+## What to change
+
+- Front matter (`layout`, `date`, `categories`, `topics`, `projects`, `image`, `description`, `external_repo`).
+- Code samples and named tools/metrics so they match the demo.
+- Broken markdown (missing fences, escaped characters).
+
+Leave the rest of the source intact.

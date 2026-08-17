@@ -10,9 +10,7 @@ description: "From vibe checks to Evaluation-Driven Development: MLflow tracing,
 external_repo: "https://github.com/caldeirav/mlflow-edd-financial-agent"
 ---
 
-Deploying autonomous AI agents into enterprise workflows — financial analysis, market research, automated portfolio briefing — demands a fundamental transition from subjective "vibe checks" to **Evaluation-Driven Development (EDD)**. As demonstrated in the [caldeirav/mlflow-edd-financial-agent](https://github.com/caldeirav/mlflow-edd-financial-agent) reference architecture, non-deterministic LLM outputs, multi-step planning, and distributed tool invocations present severe operational risks around data precision, tool routing errors, and ungrounded synthesis. EDD addresses these failure modes by embedding quantitative testing, distributed tracing, and domain-calibrated evaluation directly into the software development lifecycle.
-
-On this blog, we call that discipline **thinking inside the box**. EDD is how the box becomes inspectable: every tool call is traced, every answer is scored, and every automated judge is calibrated against expert judgment.
+Deploying autonomous AI agents into enterprise workflows — financial analysis, market research, automated portfolio briefing — demands a fundamental transition from subjective "vibe checks" to **Evaluation-Driven Development (EDD)**. Non-deterministic LLM outputs, multi-step planning, and distributed tool invocations present severe operational risks around data precision, tool routing errors, and ungrounded synthesis. EDD addresses these failure modes by embedding quantitative testing, distributed tracing, and domain-calibrated evaluation directly into the software development lifecycle.
 
 ---
 
@@ -31,13 +29,13 @@ EDD structures agent quality assurance around two continuous evaluation loops:
 
 Agentic architectures are distributed state machines. When a financial agent processes a request like *"Provide a financial analysis of AAPL — cover recent price context, relevant news, key financial-statement signals, and risks,"* the system generates a chain of intermediate thoughts, tool calls, and payload responses. Without granular, persistent tracing, debugging why an agent selected an incorrect tool or produced an erroneous financial figure becomes impossible.
 
-As implemented in the [mlflow-edd-financial-agent](https://github.com/caldeirav/mlflow-edd-financial-agent) repository, persistent state management relies on tracking every decision point, LLM call, and tool execution inside a persistent backend like SQLite via MLflow Tracing. Storing full execution graphs enables developers to replay agent state, isolate intermediate failures, and audit the exact lineage of every generated financial metric.
+Persistent state management relies on tracking every decision point, LLM call, and tool execution inside a persistent backend like SQLite via MLflow Tracing. Storing full execution graphs enables developers to replay agent state, isolate intermediate failures, and audit the exact lineage of every generated financial metric.
 
 ### Overcoming the MCP Observability Challenge with MLflow Tracing
 
 When agents interact with external tools over MCP, tool execution is decoupled across independent server processes. Standard agent logs fail at the MCP boundary, creating a critical blind spot where engineers cannot distinguish between an LLM tool-selection error, a JSON payload serialization failure, or a downstream data timeout.
 
-The reference architecture resolves this with OpenTelemetry-style spans captured by `mlflow.langchain.autolog()`. A FastMCP server (`mcp_server.py`) exposes live Yahoo Finance tools over stdio. LangGraph binds those tools through `langchain-mcp-adapters`. Autolog then records typed `AGENT` / `TOOL` / `LLM` spans — including arguments and results — into `sqlite:///mlflow.db` for inspection in the MLflow UI.
+Resolving this means capturing OpenTelemetry-style spans with `mlflow.langchain.autolog()`. A FastMCP server (`mcp_server.py`) exposes live Yahoo Finance tools over stdio. LangGraph binds those tools through `langchain-mcp-adapters`. Autolog then records typed `AGENT` / `TOOL` / `LLM` spans — including arguments and results — into `sqlite:///mlflow.db` for inspection in the MLflow UI.
 
 The MCP server itself is deliberately small: three market-data tools, no mock tool list.
 
@@ -93,7 +91,7 @@ That is the audit trail. Open the experiment **edd-financial-assistant** in the 
 
 Scalable agent engineering requires replacing manual inspection with programmatic, reproducible evaluation pipelines. Automated EDD pipelines utilize LLM-as-a-Judge evaluators combined with deterministic heuristic metrics to assess agent outputs across multiple performance dimensions.
 
-In the mlflow-edd-financial-agent framework, evaluation pipelines leverage `mlflow.genai.evaluate()` to execute standardized evaluation suites against agent runs. Rather than scoring overall output text in isolation, the evaluation pipeline breaks down agent execution into distinct quantitative metrics:
+Evaluation pipelines leverage `mlflow.genai.evaluate()` to execute standardized evaluation suites against agent runs. Rather than scoring overall output text in isolation, the evaluation pipeline breaks down agent execution into distinct quantitative metrics:
 
 | Metric | Type | Target Evaluation Focus |
 | :--- | :--- | :--- |
@@ -155,7 +153,7 @@ The third pillar of EDD focuses on calibrating automated evaluators against huma
 
 In enterprise agent deployments, incorrect tool selection is one of the most common failure modes. Agents operating over MCP tool registries frequently pick sub-optimal tools, hallucinate non-existent parameter names, or enter redundant tool-execution loops when presented with ambiguous user prompts.
 
-Continuous Learning via Human Feedback (CLHF) resolves this by connecting production observability directly to expert calibration through a closed-loop engineering workflow. In the reference architecture, that loop is implemented on MLflow traces with MemAlign:
+Continuous Learning via Human Feedback (CLHF) resolves this by connecting production observability directly to expert calibration through a closed-loop engineering workflow. That loop can be implemented on MLflow traces with MemAlign:
 
 1. **Trace Capture & Span Filtering:** Agent runs captured via autolog and stored in the SQLite/MLflow backend are reviewed in the UI. Engineers screen traces for anomalies — low evaluator confidence, failed tool calls, ungrounded figures, or empty reports.
 2. **SME Annotation:** Flagged traces receive a **HUMAN** assessment using the **same name** as the judge being calibrated (`ToolCallCorrectness`, `ToolCallEfficiency`, or `Groundedness`), plus a short rationale. MemAlign uses both the label and the rationale.
@@ -177,7 +175,7 @@ aligned_judge.register(experiment_id=experiment_id)
 
 ## Operationalizing EDD: From Demo to Production
 
-Transitioning agentic AI from an experimental prototype to an enterprise-grade asset requires abandoning the belief that foundation models can be trusted out of the box. The [caldeirav/mlflow-edd-financial-agent](https://github.com/caldeirav/mlflow-edd-financial-agent) project demonstrates that combining persistent MLflow tracing, an OpenTelemetry-style view of MCP tool calls, automated evaluation suites, and expert-aligned CLHF loops creates a robust software engineering harness for autonomous agents.
+Transitioning agentic AI from an experimental prototype to an enterprise-grade asset requires abandoning the belief that foundation models can be trusted out of the box. The [caldeirav/mlflow-edd-financial-agent](https://github.com/caldeirav/mlflow-edd-financial-agent) repository is an example implementation of these three EDD pillars: persistent MLflow tracing, an OpenTelemetry-style view of MCP tool calls, automated evaluation suites, and expert-aligned CLHF. It shows how that combination becomes a working software engineering harness for a financial research assistant.
 
 The operational loop is always the same: **instrumented run → evaluate tool use and groundedness → CLHF in the UI → align → compare**. Which judge you annotate depends on whether you are tuning **tool selection** or **answer quality from tool results** (or both). Further rounds add more HUMAN feedback; baselines remain for regression comparison.
 
