@@ -63,3 +63,10 @@ posts:
     source_post: _posts/2026-08-16-spec-driven-development-agents-md-at-scale.md
     prompt_preset: mascot_cinematic_archive
     status: ready
+
+  evaluation-driven-development-financial-agents:
+    file: evaluation-driven-development-financial-agents.png
+    path: /assets/images/og/evaluation-driven-development-financial-agents.png
+    source_post: _posts/2026-08-17-evaluation-driven-development-financial-agents.md
+    prompt_preset: mascot_cinematic_eval_lab
+    status: ready

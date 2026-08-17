@@ -1,0 +1,39 @@
+---
+description: Artistic guidelines for Vince the Validator OG images and post illustrations
+globs: "_posts/**/*.md,assets/images/og/**"
+alwaysApply: true
+---
+
+# Blog illustration guidelines
+
+Vince the Validator is the publication mascot. Invent a **new** scene for each post that literalizes that article's idea. Exercise creative judgment. Do not clone prior compositions.
+
+## Canonical Vince
+
+- White humanoid robot; dark visor with **glowing cyan circuit-face** (short horizontal line eyes, faint traces — not round cartoon eyes)
+- **Bright red fedora**, black ribbon band
+- Charcoal waistcoat over dark turtleneck; white articulated arms
+- Cyan **AI** badge; cyan sparkline on the pocket
+- Role: validator / conductor / auditor — never a generic stock robot
+
+Reference: `assets/images/thinkinginsidethebox.ai_logo_closeup.png`
+
+## Palette and style
+
+- Dark navy/black grounds; electric **cyan/teal** for digital elements; **red** reserved for the fedora and one narrative accent
+- Occasional warm amber sidelight for cinematic posts
+- Cinematic 3D digital illustration; tech-professional with a touch of whimsy
+- Sparse graphic labels only. No walls of fake UI copy.
+
+## Creative judgment (required)
+
+- The editorial "box" is philosophy, **not** a mandatory cube. Use a cube only when it earns the metaphor.
+- Do not reuse: glowing cube default, archive/holographic binders, stacking persona blocks, SPEC HUD over-the-shoulder, HITL flowchart, over-harnessed hallway.
+- Guest posts (`author` other than the host) may omit Vince (`guest_technical_corporate`).
+- Host posts should feature Vince as the focal character.
+
+## OG image spec
+
+- Exactly **1200 × 627 px** PNG at `assets/images/og/{post-slug}.png`
+- Register the file in `_data/og-images.yml` and set post front matter `image:`
+- Landscape LinkedIn header: Vince left-of-center, narrative space to the right
