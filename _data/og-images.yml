@@ -47,7 +47,7 @@ posts:
     file: non-blocking-hitl-agents-mrtr.png
     path: /assets/images/og/non-blocking-hitl-agents-mrtr.png
     source_post: _posts/2026-08-02-non-blocking-hitl-agents-mrtr.md
-    prompt_preset: mascot_prompt_3_linkedin_header
+    prompt_preset: mascot_cinematic_mrtr_token
     status: ready
 
   over-harnessing-context-file-cost:
