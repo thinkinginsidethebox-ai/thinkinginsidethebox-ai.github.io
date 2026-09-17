@@ -70,3 +70,10 @@ posts:
     source_post: _posts/2026-08-17-evaluation-driven-development-financial-agents.md
     prompt_preset: mascot_cinematic_eval_lab
     status: ready
+
+  tool-retrieval-for-slm-agents:
+    file: tool-retrieval-for-slm-agents.png
+    path: /assets/images/og/tool-retrieval-for-slm-agents.png
+    source_post: _posts/2026-09-17-tool-retrieval-for-slm-agents.md
+    prompt_preset: mascot_cinematic_mcp_patchbay
+    status: ready

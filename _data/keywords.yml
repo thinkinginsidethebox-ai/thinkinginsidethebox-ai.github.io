@@ -54,3 +54,8 @@ projects:
     label: Lola
     description: AI context package manager — portable skills, agents, and AGENTS.md modules for cross-assistant deployment.
     url: "https://github.com/LobsterTrap/lola"
+
+  - slug: toolscope
+    label: ToolScope
+    description: Tool retrieval library — filter MCP and OpenAI tool catalogs per prompt before the model binds them.
+    url: "https://github.com/ilya-kolchinsky/ToolScope"
