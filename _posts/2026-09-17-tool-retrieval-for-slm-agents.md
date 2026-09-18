@@ -36,7 +36,9 @@ The numbers come from a [BFCL](https://gorilla.cs.berkeley.edu/leaderboard.html)
 
 A typical BFCL item is small: a user prompt, a short list of function definitions, and a gold tool call. The **Multiple** split is the interesting one for catalogs: several candidate functions sit next to the query, and the model must choose. Official scoring does not execute tools. It parses the model’s predicted call and checks it against `possible_answer` — a structured set of acceptable names and argument values (optional fields may be omitted).
 
-Our protocol is harder than that per-item list. We **unioned** the Multiple functions into one shared catalog **C** (443 tools after first-seen-wins on name collisions) and asked every query against all of C. Baseline bound C. Other conditions retrieved about ten tools, then bound only those. One LangGraph turn, native tool calling, no tool execution. Five GGUF models via llama.cpp.
+Our setup is harder than that per-item list. We collected every function from the Multiple split into **one shared catalog** of 443 tools. When two entries used the same name with different schemas, we kept the first definition we saw. Every query then ran against that full catalog, not against a handful of candidates packed with the prompt.
+
+The baseline attached all 443 tools to the model call. The other runs first retrieved about ten tools, then attached only those. Each trial was a single LangGraph turn: the model had to emit a native tool call, and we never executed the tool. We served five open-weight models locally through llama.cpp.
 
 Two scores matter, and they answer different engineering questions:
 
