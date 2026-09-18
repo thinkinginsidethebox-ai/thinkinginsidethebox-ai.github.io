@@ -59,7 +59,7 @@ These scores are internally consistent for this harness. They are not official G
 
 ## What retrieval changes — and what it does not
 
-Same queries, same catalog, bind only the top ten retrieved tools:
+The table below is tool-name accuracy on the same 200 queries and the same 443-tool catalog. One condition attached every tool. The other retrieved ten, then attached only those.
 
 | Model | Full catalog | k=10 retrieved |
 |---|---:|---:|
@@ -68,9 +68,9 @@ Same queries, same catalog, bind only the top ten retrieved tools:
 | Qwen2.5 7B | 40.0% | 87.0% |
 | Llama 3.3 70B | 79.0% | 91.0% |
 
-Tool-name accuracy, 200 queries, 443-tool catalog. An 8B model with a shortlist beat a 70B model on the full catalog. That is the AppDev result: a cheaper model, doing the same routing job, because the prompt got smaller. No extra training run. Tool JSON shrank by about **98%** (~60k tokens down to ~1.4k). Parse failures on the small Llamas dropped to zero. Latency dropped with the prompt.
+With a shortlist, the 8B model beat the 70B model that still saw the full catalog. That is the result that matters for application developers: a cheaper model did the same routing job because the prompt got smaller, with no extra training run. Tool JSON in the prompt shrank by about **98%**, from roughly 60k tokens to 1.4k. Parse failures on the small Llamas dropped to zero, and latency fell with the prompt.
 
-Two limits, because they change how you build.
+Two limits still apply, and both change how you should build.
 
 **Lexical and dense looked similar here. Do not take that as a production default.** BM25 and embedding retrieval landed within a few points on this catalog. BFCL is a good fit for **lexical** search: function names and descriptions often share wording with the prompt (`math.gcd` / “greatest common divisor”, `whole_foods.check_price` / “price of tomatoes at Whole Foods”). Enterprise catalogs are messier. Tools are named `sync_records` or `case_update_v3`. Users say “nudge the KYC file after the refresh.” Descriptions are thin, duplicated, or written for humans who already know the system. In that setting you want **hybrid** retrieval: sparse match for tokens that do exist, dense match for paraphrase and intent. The design that always matters is still *retrieve, then bind*. The ranker you ship should assume the query and the schema will not be as aligned as BFCL.
 
