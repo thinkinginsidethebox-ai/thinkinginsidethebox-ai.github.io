@@ -1,24 +1,24 @@
 ---
 layout: post
-title: "Stop binding every MCP tool"
+title: "Improve SLM tool calling without post-training"
 date: 2026-09-17 09:00:00 +0800
 categories: [AAIF, Engineering]
 topics: [evaluation-driven-development, agentic-safety]
 projects: [mcp, agentgateway, toolscope]
 image: "/assets/images/og/tool-retrieval-for-slm-agents.png"
-description: "Small models can call tools. They cannot search a 400-tool MCP catalog. Filter by identity, then retrieve — no post-training required."
+description: "An 8B model with a short tool list can beat a 70B model on the full catalog. Keep the cheaper model; filter what it sees — no fine-tune required."
 external_repo: "https://github.com/ilya-kolchinsky/ToolScope"
 ---
 
-MCP made it easy to plug tools into an agent. A GitHub server, a Jira server, a Slack server, an internal API — `tools/list` returns them all, and most frameworks bind the whole list into the next model call.
+When a small language model (SLM) fumbles tool calling, the usual advice is to fine-tune it or replace it with a bigger one. There is a cheaper move that stays in your application. **Keep the SLM. Change what it sees.**
 
-That is a good integration story. It is a bad inference story, especially if you are running a **small language model (SLM)**.
+MCP made it easy to plug tools into an agent. A GitHub server, a Jira server, a Slack server, an internal API — `tools/list` returns them all, and most frameworks bind the whole list into the next model call. That is a good integration story. It is a bad inference story for a 3B or 8B model.
 
-A small model can call a tool. It cannot search a catalog. When you paste hundreds of function schemas into the prompt, you are asking a 3B or 8B model to do library search and function calling in the same pass. Those are different jobs. One of them belongs in your application — and a lot of it belongs **before** the model ever sees a tool list.
+A small model can call a tool. It cannot search a catalog. When you paste hundreds of function schemas into the prompt, you are asking it to do library search and function calling in the same pass. Those are different jobs. **Calling is already in the weights. Search is yours** — and you can do it without post-training.
 
-## Binding the whole catalog is the failure
+## The SLM is not the bottleneck
 
-The failure is not “small models cannot do tool calling.” It is “small models cannot do tool calling **over an unbounded registry**.”
+The failure is not “small models cannot do tool calling.” It is “small models cannot do tool calling **over an unbounded registry**.” Give them a short, allowed list and they start looking like a much larger model on the same task.
 
 We ran five locally served models against a **shared catalog of 443 tools** — every unique function in a BFCL Multiple split, bound on every query. Same 200 prompts, same catalog. The baseline gave the model the lot.
 
@@ -28,7 +28,7 @@ That baseline fails in three different ways, depending on model size:
 - **Wrong-tool saturation (7B).** Qwen2.5 7B could emit calls (40% name accuracy) but spent most of the rest on the *wrong* function. It was searching 443 names, not filling one schema.
 - **Usable but worse (32B–70B).** Llama 3.3 70B reached **79%** on the full catalog. That is deployable. It is not the ceiling. Extra tools still cost tokens, latency, and a higher chance of picking a near-duplicate name.
 
-You do not need a new model family to see the pattern. The catalog is in the prompt. Attention is finite. Binding everything is an application choice.
+You do not need a new model family to see the pattern. The catalog is in the prompt. Attention is finite. Binding everything is an application choice — which means you can undo it without touching weights.
 
 ## How this was measured
 
@@ -62,7 +62,7 @@ Same queries, same catalog, bind only the top ten retrieved tools:
 | Qwen2.5 7B | 40.0% | 87.0% |
 | Llama 3.3 70B | 79.0% | 91.0% |
 
-Tool-name accuracy, 200 queries, 443-tool catalog. An 8B model with a shortlist beat a 70B model on the full catalog. Tool JSON in the prompt shrank by about **98%** (~60k tokens down to ~1.4k). Parse failures on the small Llamas dropped to zero. Latency dropped with the prompt.
+Tool-name accuracy, 200 queries, 443-tool catalog. An 8B model with a shortlist beat a 70B model on the full catalog. That is the AppDev result: a cheaper model, doing the same routing job, because the prompt got smaller. No extra training run. Tool JSON shrank by about **98%** (~60k tokens down to ~1.4k). Parse failures on the small Llamas dropped to zero. Latency dropped with the prompt.
 
 Two limits, because they change how you build.
 
@@ -100,7 +100,7 @@ Binding is a lifecycle event, not a startup config. If you bind the world when t
 
 **Log the shortlist.** When a call is wrong, you want to know whether the right tool was bound. That splits failures into policy miss, retrieval miss, sibling confusion, and bad arguments.
 
-**Do not post-train for selection if a shortlist already works.** Fine-tuning is the right move for argument quality, domain language, or a model that cannot emit tool calls at all. It is the slow move for “there are 200 MCP tools and the 7B model gets lost.”
+**Do not post-train for selection if a shortlist already works.** Fine-tuning is the right move for argument quality, domain language, or a model that cannot emit tool calls at all. It is the slow move for “there are 200 MCP tools and the 7B model gets lost.” If the cheaper model already routes once the list is small, spend the GPU budget on serving more of it — not on teaching it the catalog.
 
 ### Gateway or client?
 
@@ -121,10 +121,10 @@ Do the first without the second, and a permitted catalog of 80 tools still drown
 
 It is a good fit when:
 
+- you want an SLM (or a cheaper mid-size model) to *route* tools well without a custom fine-tune
 - the identity-scoped catalog is still large (more than roughly twenty tools, often from one or more MCP servers)
 - you want to keep LangChain, LangGraph, or FastMCP as they are
-- you are running an SLM — or a larger model that still degrades on a fat prompt
-- you do not want meta-tools, and you do not want a custom fine-tune just to pick the right function
+- you do not want meta-tools
 
 It is the wrong first move when the allowed set is already tiny, or when the model already picks the name and fails on arguments. It is also the wrong *only* move when the problem is “this agent should not see that tool.” That is gateway policy.
 
@@ -162,8 +162,8 @@ The model still sees normal MCP tools — fewer of them. `call_tool` is a passth
 
 The eval harness in that repo is how we produced the numbers above. It grades **selection** (right name) separately from **calling** (AST / right arguments). Use that split in your own tests: a retrieval miss is an index problem; `bad_args` is not; a tool that should never have been listable is an IBAC problem.
 
-## Start with the list you are allowed to bind
+## Keep the small model
 
-If you are shipping an MCP-backed agent on a small model, the cheapest reliability win is still the least glamorous: do not show the model the whole catalog.
+You can improve SLM tool calling without post-training. The weights already know how to invoke a function. They do not know how to search a 400-tool MCP union. That search is an engineering step: identity and IBAC at the gateway, hybrid retrieval at bind time.
 
-Keep MCP as the contract. Put **identity and IBAC** on the gateway so the dictionary is already what the agent should use. Put **hybrid retrieval** in front of `bind_tools` so the prompt is what this turn needs. Train later, if argument quality still needs it.
+Keep MCP as the contract. Keep the cheaper model in the loop. Put **identity and IBAC** on the gateway so the dictionary is already what the agent should use. Put **hybrid retrieval** in front of `bind_tools` so the prompt is what this turn needs. Train later, if argument quality still needs it. Selection is already solvable in the application.
