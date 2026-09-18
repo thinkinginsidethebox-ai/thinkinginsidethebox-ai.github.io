@@ -40,16 +40,20 @@ Our setup is harder than that per-item list. We collected every function from th
 
 The baseline attached all 443 tools to the model call. The other runs first retrieved about ten tools, then attached only those. Each trial was a single LangGraph turn: the model had to emit a native tool call, and we never executed the tool. We served five open-weight models locally through llama.cpp.
 
-Two scores matter, and they answer different engineering questions:
+Two scores matter, and they answer different engineering questions.
 
-| Score | Question | What a fail means |
+**Name accuracy** asks only whether the model invoked a ground-truth function name. It measures routing: did it pick the right tool?
+
+**AST accuracy** is BFCL’s abstract-syntax-tree check. The model’s output is parsed into a call — a function name plus a map of argument names to values. That structure is compared to `possible_answer`, the dataset’s gold call. The score counts only if three things hold: the name is a gold name; every required argument is present; each value is in the allowed list for that field. Optional arguments may be omitted; if they appear, they still have to be allowed. The tool is never executed. The checker grades the **shape of the call**, not a live API result.
+
+That split is the point for AppDev. Name accuracy tells you whether the shortlist and the model agreed on *which* API to hit. AST accuracy tells you whether the call would have been a legal invocation — right tool, right fields, right values — without standing up Jira or GitHub. A name match with a failed AST is almost always `bad_args`.
+
+| Score | Passes when | A fail means |
 |---|---|---|
-| **Name accuracy** | Did the model invoke a ground-truth function name? | Selection / routing is broken. |
-| **AST accuracy** | After parsing the call into a structured `{name, arguments}` object, do the arguments match `possible_answer`? | The name may be right; the **form** is wrong. |
+| **Name accuracy** | The predicted function name is a ground-truth name. | Selection / routing is broken. |
+| **AST accuracy** | The parsed call matches `possible_answer` on name **and** arguments. | The name may be right; the arguments are not. |
 
-AST here is not a compiler AST of your Python. It is BFCL’s check: treat the tool call as a tree of name + parameters, then match values. That is why it is useful for AppDev. **Name accuracy** tells you whether the shortlist and the model agreed on *which* API to hit. **AST accuracy** tells you whether that call would have been a legal invocation — required fields present, values in the allowed set — without standing up Jira or GitHub.
-
-Retrieval can move the first number a lot. It barely teaches the second. If you only track “did the agent succeed,” you will mix those bugs and fine-tune the wrong layer.
+Retrieval can move name accuracy a lot. It barely teaches AST accuracy. If you only track “did the agent succeed,” you will mix those bugs and fine-tune the wrong layer.
 
 These scores are internally consistent for this harness. They are not official Gorilla leaderboard numbers. Treat them as evidence for the architecture, not as a production SLA.
 
