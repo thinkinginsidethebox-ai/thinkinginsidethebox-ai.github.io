@@ -24,6 +24,10 @@ topics:
     label: MCP 2026-07-28
     description: The July 2026 Model Context Protocol revision — stateless core, Multi Round-Trip Requests, header-based routing, and enterprise-scale agent tooling.
 
+  - slug: decision-models
+    label: Decision Models
+    description: Typed Choice and Score engines as a self-hostable control plane for routing, ranking, and gating in enterprise agent stacks.
+
 projects:
   - slug: mcp
     label: MCP

@@ -3,8 +3,8 @@ layout: post
 title: "Decision Models in Enterprise Agentic Architecture: Performance, Safety, and MCP"
 date: 2026-10-11 09:00:00 +0800
 categories: [AAIF, Engineering]
-topics: [evaluation-driven-development, agentic-safety]
-projects: [mcp, agentgateway]
+topics: [decision-models, evaluation-driven-development, agentic-safety]
+projects: [mcp]
 image: "/assets/images/og/decision-models-enterprise-agentic-architecture.png"
 description: "Open decision models as the agent control plane: typed Choice and Score beat JSON chat for routing, pair with proven search for passages, and gate MCP tools with structured probabilities."
 external_repo: "https://github.com/caldeirav/finagent-mesh-mcp"
