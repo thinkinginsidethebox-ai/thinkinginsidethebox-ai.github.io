@@ -57,11 +57,11 @@ When the agent had passages to rank:
 
 What that means when you are building:
 
-**Train the hop users feel.** We did not fine-tune a chat model to “do finance.” We improved the step that feeds evidence (and, by the same pattern, the step that could rank MCP tool candidates before `tools/call`).
+**Train the hop users feel.** We did not fine-tune a chat model to “do finance.” We improved the step that ranks evidence after the router has already picked a document class.
 
-**Keep the shortlist.** A strong Score head still wants a small candidate set. Dumping the whole index—or the whole MCP catalog—into one model call is the same anti-pattern as binding hundreds of tools into a prompt.
+**Keep the shortlist.** A strong Score head still wants a small candidate set. Dumping the whole index into one model call is the same anti-pattern as binding hundreds of tools into a prompt.
 
-**Measure yield separately from ranking quality.** About **four in ten** questions still produced an empty passage list after type routing—often because the index had no chunks of that type. A better Score cannot invent documents. Log “routed but nothing to fetch” the way you log “MCP tool returned not found.” Otherwise dashboards celebrate ranking while users still see dead ends.
+**Track two outcomes, not one.** Ranking quality asks: *when we have passages, did we put the right ones on top?* Yield asks: *how often do we have any passages at all?* In our run, about **four in ten** questions never reached ranking—Choice picked a filing type, but the corpus had no chunks of that type, so Stage 2 had an empty list. Tuning Score only helps the cases with something to rank; it cannot create missing documents. If you only chart ranking scores, the agent can look “much better” while users still hit “no evidence” nearly as often. Log empty pools as their own failure mode.
 
 **Budget latency.** The tuned head is much slower than BM25 or E5 on our hardware. A sensible production shape is a ladder: cheap search first, escalate to tuned Score when policy or low confidence requires it—or distill a smaller Score for the hot path.
 
@@ -84,19 +84,21 @@ The router correctly preferred a **10-K**. After that, ranking diverged:
 | Dense search (E5) | Housing outlook / production ramp | Weak — cash-flow evidence buried |
 | Shortlist → untuned Score | Lumber production flexibility | Mostly off-topic |
 
-We did **not** run the generative answer step for this comparison. The point was the handoff: if Stage 2 feeds noise into System 2 or into an MCP call, the final chat reply looks like an “LLM failure” when the real bug was **wrong evidence selection**. Specializing Score fixed that handoff without touching MCP servers or the agent topology.
+We did **not** run the generative answer step for this comparison. The point was the handoff: if Stage 2 feeds noise into whatever comes next, the final chat reply looks like an “LLM failure” when the real bug was **wrong evidence selection**. Specializing Score fixed that handoff without rewriting the agent graph or the MCP tool servers that already sit in this stack.
 
 ---
 
-## Why this matters for MCP tool calling
+## How this relates to MCP (without claiming a tool-calling eval)
 
-MCP standardizes **how** tools are exposed. Decision models standardize **how** the agent selects and gates them. This tuning work sits in the middle of that story:
+A clarification up front: **this experiment did not benchmark MCP tool selection.** We measured filing-type Choice and passage Score on FinAgentBench. The [finagent-mesh-mcp](https://github.com/caldeirav/finagent-mesh-mcp) agent still *uses* MCP for filing helpers and calculations, but the numbers above are about evidence ranking, not `tools/list` / `tools/call` accuracy.
 
-1. **Choice over `tools/list`** — pick among registered tool names with structured probabilities, not free-form JSON. We left Choice alone here; it was already the stronger hop.
-2. **Score before `tools/call`** — rank passages, tool candidates, or other explicit options after a cheap shortlist. That is the hop we trained. Better ranking means fewer wasted MCP calls and less junk in the context window.
-3. **MCP owns effects** — EDGAR fetches, calculators, and auth stay in servers. A new Score checkpoint changes *which* path wins; it does not invent policy or arithmetic in the model.
+The link to tool-calling agents is architectural, not a result we claimed:
 
-If you are wiring agents to MCP today: **keep the stages and the tool boundary stable; profile which stage fails; improve that stage; ship the new engine as an optional track.**
+1. **Same control-plane shape.** Choice picks among a known set (filing types today; tool names in a tool-heavy agent). Score ranks an explicit candidate list (passages today; you could use the same interface for shortlisted tools or evidence before a call). We trained Score as a **swap-in engine** behind that interface.
+2. **MCP stays the effects layer.** In this repo, side effects and deterministic work already live in MCP servers. Tuning Score changed *which passages* rose to the top; it did not change tool schemas, auth, or server code. That is the pattern you want when improving an agent that already talks to MCP: improve the decision hop, leave the tool boundary alone.
+3. **What you can reuse from this work.** Profile which stage fails. If routing is weak, invest in Choice (including, later, Choice over a tool catalog). If routing is fine but the next step sees the wrong inputs, specialize Score—as we did for passages. Ship the new engine as a parallel track. Do **not** read our ~0.61 ranking lift as proof that tool calling got better; that would need its own labeled tool-selection eval.
+
+If you are building MCP agents: keep stages and tool servers stable; train the hop your traces say is weak; treat tool-calling quality as a separate measurement when you care about it.
 
 ---
 
@@ -104,8 +106,8 @@ If you are wiring agents to MCP today: **keep the stages and the tool boundary s
 
 1. **Split decisions from generation.** Route and rank with typed Choice/Score; use a large language model for synthesis after evidence (or tool results) exist.
 2. **Profile before you train.** If routing is wrong, fix Choice or the catalog. If routing is fine but answers are ungrounded, fix Score (or retrieval) first—not the whole chat stack.
-3. **Shortlist, then Score.** Especially for large corpora and large MCP catalogs.
-4. **Log yield and ranking separately.** Empty pools and bad orderings need different fixes (data / fallbacks vs model / shortlist).
+3. **Shortlist, then Score.** Especially for large corpora—and the same idea applies if you later shortlist a large tool catalog before Choice or Score.
+4. **Log yield and ranking separately.** “No candidates” and “wrong order” need different fixes (data / fallbacks vs model / shortlist).
 5. **Prefer labeled fine-tuning of the weak hop before RL.** Clear relevance labels were enough for a large lift. Add preference or reinforcement loops only when you know what “better” means in production.
 6. **Plan a latency ladder** so quality wins do not break interactive SLAs.
 7. **Invest in corpus and fallbacks** when empty pools dominate. Another training epoch will not create missing filings or missing tools.
