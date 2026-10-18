@@ -84,3 +84,10 @@ posts:
     source_post: _posts/2026-10-11-decision-models-enterprise-agentic-architecture.md
     prompt_preset: mascot_cinematic_decision_control_plane
     status: ready
+
+  tuning-decision-models-enterprise-agents:
+    file: tuning-decision-models-enterprise-agents.png
+    path: /assets/images/og/tuning-decision-models-enterprise-agents.png
+    source_post: _posts/2026-10-18-tuning-decision-models-enterprise-agents.md
+    prompt_preset: mascot_visual_score_module_swap
+    status: ready
