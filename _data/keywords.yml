@@ -63,3 +63,8 @@ projects:
     label: ToolScope
     description: Tool retrieval library — filter MCP and OpenAI tool catalogs per prompt before the model binds them.
     url: "https://github.com/ilya-kolchinsky/ToolScope"
+
+  - slug: open-responses
+    label: Open Responses
+    description: AAIF wire specification for multi-provider model calls — items, semantic streams, and tool loops on /v1/responses.
+    url: "https://www.openresponses.org/"

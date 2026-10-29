@@ -91,3 +91,10 @@ posts:
     source_post: _posts/2026-10-18-tuning-decision-models-enterprise-agents.md
     prompt_preset: mascot_visual_score_module_swap
     status: ready
+
+  open-responses-for-agent-developers:
+    file: open-responses-for-agent-developers.png
+    path: /assets/images/og/open-responses-for-agent-developers.png
+    source_post: _posts/2026-10-29-open-responses-for-agent-developers.md
+    prompt_preset: mascot_cinematic_one_connector
+    status: ready
