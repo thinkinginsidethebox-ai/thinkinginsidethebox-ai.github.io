@@ -5,7 +5,7 @@ date: 2026-10-29 09:00:00 +0800
 categories: [AAIF, Engineering]
 projects: [open-responses]
 image: "/assets/images/og/open-responses-for-agent-developers.png"
-description: "Open Responses is now an AAIF project. Write the agent against items and /v1/responses, then point that same client at a gateway or a vLLM pool behind llm-d."
+description: "Open Responses is now an AAIF project. This article shows how you can rewrite your agent against items and /v1/responses, then point that same client at a gateway or a vLLM pool behind llm-d."
 ---
 
 On 22 October 2026 the Agentic AI Foundation added four projects and reached ten in its first year. One of them is [Open Responses](https://www.openresponses.org/), contributed by OpenAI. The [announcement](https://aaif.io/news/agentic-ai-foundation-announces-four-new-projects) puts it next to MCP, A2A, agentgateway, AGENTS.md, and goose, under the same Linux Foundation governance. Code in the project is Apache-2.0. Documentation is CC BY 4.0.
