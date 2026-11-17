@@ -39,3 +39,32 @@ details > summary {
   width: 100%;
   height: auto;
 }
+
+/* In-article demo player. Beats typography-plugin iframe margins. */
+.article-body .article-video {
+  margin: 1.75rem 0 0.5rem;
+}
+.article-body .article-video .video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: #0f172a;
+}
+.article-body .article-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+}
+.article-body .article-video figcaption {
+  margin-top: 0.75rem;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #64748b;
+}

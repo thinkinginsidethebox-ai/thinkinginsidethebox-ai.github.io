@@ -39,6 +39,11 @@ projects:
     description: Architectural control plane for intercepting and governing agent tool execution.
     url: "https://github.com/agentgateway/agentgateway"
 
+  - slug: agent-substrate
+    label: Agent Substrate
+    description: Kubernetes runtime for sandboxed agent and tool execution. A CNCF Sandbox project.
+    url: "https://github.com/agent-substrate/substrate"
+
   - slug: agents-md
     label: AGENTS.md
     description: AAIF standard for universal agent context — stack, commands, boundaries, and persona registries.

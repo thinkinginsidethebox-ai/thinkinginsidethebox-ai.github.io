@@ -98,3 +98,10 @@ posts:
     source_post: _posts/2026-10-29-open-responses-for-agent-developers.md
     prompt_preset: mascot_cinematic_one_connector
     status: ready
+
+  trust-boundaries-policy-enforcement-points:
+    file: trust-boundaries-policy-enforcement-points.png
+    path: /assets/images/og/trust-boundaries-policy-enforcement-points.png
+    source_post: _posts/2026-11-16-trust-boundaries-policy-enforcement-points.md
+    prompt_preset: mascot_circuit_breaker_claim_gate
+    status: ready
